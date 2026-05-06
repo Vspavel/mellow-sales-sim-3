@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f8f2e9" />
+    <title>Mellow — Batch Analysis</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'&gt;&lt;rect width='32' height='32' rx='6' fill='%23f8f2e9'/&gt;&lt;path d='M9 7 L13 22 L16 11 L19 22 L23 7' stroke='%23232222' stroke-width='2.4' fill='none' stroke-linejoin='miter' stroke-linecap='square'/&gt;&lt;path d='M22.5 7 L18 22' stroke='%23ff6f23' stroke-width='1.6' fill='none' stroke-linecap='square'/&gt;&lt;/svg&gt;" />
+    <link rel="preload" href="/fonts/PPNeueWorld-Regular.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/SuisseIntl-Regular.woff2"  as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/SuisseIntl-Medium.woff2"   as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .analysis-shell { max-width: 860px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+      .analysis-header { margin-bottom: 2rem; }
+      .analysis-header h1 { font-size: 1.4rem; font-weight: 600; margin: 0 0 .25rem; }
+      .analysis-header p { font-size: .875rem; color: #666; margin: 0; }
+
+      .batch-list { display: flex; flex-direction: column; gap: .5rem; margin-bottom: 2.5rem; }
+      .batch-item {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: .75rem 1rem; border: 1px solid #e8e0d6; border-radius: 6px;
+        cursor: pointer; background: #fff; transition: border-color .15s;
+      }
+      .batch-item:hover { border-color: #232222; }
+      .batch-item.active { border-color: #ff6f23; background: #fff9f6; }
+      .batch-item-id { font-family: monospace; font-size: .8rem; color: #999; }
+      .batch-item-status { font-size: .8rem; font-weight: 500; }
+      .status-running { color: #f59e0b; }
+      .status-completed { color: #16a34a; }
+      .status-failed { color: #dc2626; }
+
+      .run-btn {
+        background: #232222; color: #f8f2e9; border: none; border-radius: 5px;
+        padding: .625rem 1.25rem; font-size: .875rem; font-weight: 500; cursor: pointer;
+        transition: opacity .15s;
+      }
+      .run-btn:hover { opacity: .85; }
+      .run-btn:disabled { opacity: .45; cursor: not-allowed; }
+
+      .report-section { margin-bottom: 2.5rem; }
+      .report-section h2 { font-size: 1rem; font-weight: 600; margin: 0 0 1rem; border-bottom: 1px solid #e8e0d6; padding-bottom: .5rem; }
+
+      .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: .75rem; margin-bottom: 1.5rem; }
+      .stat-card { padding: .875rem 1rem; border: 1px solid #e8e0d6; border-radius: 6px; background: #faf7f3; }
+      .stat-card .stat-label { font-size: .75rem; color: #888; margin: 0 0 .2rem; }
+      .stat-card .stat-value { font-size: 1.5rem; font-weight: 600; color: #232222; margin: 0; }
+
+      .actions-list { display: flex; flex-direction: column; gap: .875rem; }
+      .action-card {
+        padding: 1rem 1.125rem; border: 1px solid #e8e0d6; border-radius: 6px; background: #fff;
+        border-left: 3px solid #ff6f23;
+      }
+      .action-card.priority-high { border-left-color: #dc2626; }
+      .action-card.priority-mid { border-left-color: #f59e0b; }
+      .action-card.priority-low { border-left-color: #86efac; }
+      .action-meta { display: flex; gap: .5rem; align-items: center; margin-bottom: .5rem; }
+      .action-priority { font-size: .75rem; font-weight: 600; color: #999; font-family: monospace; }
+      .action-area { font-size: .75rem; background: #f1ece5; color: #555; padding: .15rem .5rem; border-radius: 3px; }
+      .action-finding { font-size: .875rem; color: #232222; margin: 0 0 .35rem; font-weight: 500; }
+      .action-action { font-size: .875rem; color: #444; margin: 0 0 .35rem; }
+      .action-evidence { font-size: .78rem; color: #888; font-style: italic; margin: 0; padding: .35rem .6rem; border-left: 2px solid #e8e0d6; }
+
+      .patterns-list { display: flex; flex-direction: column; gap: .625rem; }
+      .pattern-card { padding: .75rem 1rem; border: 1px solid #e8e0d6; border-radius: 6px; background: #faf7f3; }
+      .pattern-card p { margin: 0 0 .25rem; font-size: .875rem; }
+      .pattern-meta { font-size: .78rem; color: #888; }
+
+      .persona-table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+      .persona-table th { text-align: left; padding: .5rem .75rem; font-weight: 600; border-bottom: 2px solid #e8e0d6; background: #faf7f3; }
+      .persona-table td { padding: .5rem .75rem; border-bottom: 1px solid #f0ebe3; }
+      .persona-table tr:last-child td { border-bottom: none; }
+
+      .progress-bar-wrap { height: 4px; background: #e8e0d6; border-radius: 2px; overflow: hidden; margin: .5rem 0 1rem; }
+      .progress-bar-fill { height: 100%; background: #ff6f23; transition: width .4s ease; }
+
+      .empty-state { text-align: center; padding: 3rem 1rem; color: #aaa; font-size: .9rem; }
+      .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid #e8e0d6; border-top-color: #232222; border-radius: 50%; animation: spin .7s linear infinite; margin-right: .4rem; vertical-align: middle; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+  </head>
+  <body style="background: #f8f2e9; min-height: 100vh;">
+    <div class="analysis-shell">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 1.5rem;">
+        <a href="/" style="font-size:.875rem; color:#666; text-decoration:none;">← Back to Simulator</a>
+        <a class="app-brand-link" href="/" style="text-decoration:none; display:flex; align-items:center; gap:.5rem;">
+          <span style="font-size:1.1rem; font-weight:600; color:#232222;">mellow</span>
+          <span style="font-size:.8rem; color:#999;">batch analysis</span>
+        </a>
+      </div>
+
+      <div class="analysis-header">
+        <h1>Batch Analysis</h1>
+        <p>50 automated simulations (10 × 5 personas). Post-run Opus analysis — concrete improvement actions.</p>
+      </div>
+
+      <div style="display:flex; gap:1rem; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap;">
+        <button id="startBatchBtn" class="run-btn">Run new batch (50 sims)</button>
+        <span id="runStatus" style="font-size:.875rem; color:#666;"></span>
+      </div>
+
+      <div id="batchList" class="batch-list"></div>
+
+      <div id="report" style="display:none;">
+        <div id="reportProgress" style="display:none;">
+          <p style="font-size:.875rem; color:#666; margin:0 0 .25rem;"><span class="spinner"></span>Running simulations…</p>
+          <div class="progress-bar-wrap"><div id="progressFill" class="progress-bar-fill" style="width:0%"></div></div>
+          <p id="progressLabel" style="font-size:.78rem; color:#aaa; margin:0;"></p>
+        </div>
+
+        <div id="statsSection" class="report-section" style="display:none;">
+          <h2>Results summary</h2>
+          <div id="statsGrid" class="stats-grid"></div>
+          <table class="persona-table" id="personaTable">
+            <thead><tr><th>Persona</th><th>Booked</th><th>PASS</th><th>Avg HL</th><th>Avg turns</th></tr></thead>
+            <tbody id="personaTableBody"></tbody>
+          </table>
+        </div>
+
+        <div id="actionsSection" class="report-section" style="display:none;">
+          <h2>Improvement actions <span id="actionsCount" style="font-size:.85rem; color:#aaa; font-weight:400;"></span></h2>
+          <div id="actionsList" class="actions-list"></div>
+        </div>
+
+        <div id="patternsSection" class="report-section" style="display:none;">
+          <h2>Observed patterns</h2>
+          <div id="patternsList" class="patterns-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+      let pollTimer = null;
+      let currentBatchId = null;
+
+      async function api(path, opts = {}) {
+        const resp = await fetch(path, { headers: { 'Content-Type': 'application/json' }, ...opts });
+        if (!resp.ok) throw new Error(`${resp.status} ${resp.statusText}`);
+        return resp.json();
+      }
+
+      async function loadBatchList() {
+        try {
+          const runs = await api('/api/admin/batch-runs?limit=15');
+          renderBatchList(runs);
+        } catch (e) {
+          $('batchList').innerHTML = `<p style="color:#dc2626;font-size:.875rem">${e.message}</p>`;
+        }
+      }
+
+      function renderBatchList(runs) {
+        if (!runs.length) {
+          $('batchList').innerHTML = '<p class="empty-state">No batch runs yet. Start one above.</p>';
+          return;
+        }
+        $('batchList').innerHTML = runs.map((r) => `
+          <div class="batch-item ${r.id === currentBatchId ? 'active' : ''}" onclick="selectBatch('${r.id}')">
+            <div>
+              <div style="font-size:.875rem; font-weight:500;">${r.id}</div>
+              <div class="batch-item-id">${r.created_at ? new Date(r.created_at).toLocaleString() : ''}</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="batch-item-status status-${r.status}">${r.status}</div>
+              ${r.progress ? `<div style="font-size:.78rem; color:#aaa;">${r.progress.completed || 0}/${r.progress.total || 50}</div>` : ''}
+            </div>
+          </div>
+        `).join('');
+      }
+
+      async function selectBatch(id) {
+        currentBatchId = id;
+        $('report').style.display = 'block';
+        clearInterval(pollTimer);
+        await pollBatch(id);
+      }
+
+      async function pollBatch(id) {
+        try {
+          const run = await api(`/api/admin/batch-runs/${id}`);
+          const isRunning = run.status === 'running';
+
+          // Progress bar
+          if (isRunning) {
+            $('reportProgress').style.display = 'block';
+            const pct = run.progress ? Math.round((run.progress.completed / run.progress.total) * 100) : 0;
+            $('progressFill').style.width = pct + '%';
+            $('progressLabel').textContent = `${run.progress?.completed || 0} of ${run.progress?.total || 50} simulations`;
+          } else {
+            $('reportProgress').style.display = 'none';
+          }
+
+          if (run.status === 'completed') {
+            await loadAnalysis(id);
+          }
+
+          if (isRunning) {
+            pollTimer = setTimeout(() => pollBatch(id), 4000);
+          }
+          await loadBatchList();
+        } catch (e) {
+          $('runStatus').textContent = 'Error: ' + e.message;
+        }
+      }
+
+      async function loadAnalysis(batchId) {
+        try {
+          // Load sessions summary
+          let sessions = [];
+          try { sessions = await api(`/api/admin/batch-runs/${batchId}/sessions`); } catch {}
+
+          if (sessions.length) {
+            renderStats(sessions);
+            $('statsSection').style.display = 'block';
+          }
+
+          // Load analysis report
+          const report = await api(`/api/admin/batch-runs/${batchId}/analysis`);
+          if (report.status === 'running') {
+            $('actionsSection').style.display = 'none';
+            pollTimer = setTimeout(() => loadAnalysis(batchId), 5000);
+            return;
+          }
+          if (report.actions?.length) {
+            renderActions(report.actions);
+            $('actionsSection').style.display = 'block';
+          }
+          if (report.patterns?.length) {
+            renderPatterns(report.patterns);
+            $('patternsSection').style.display = 'block';
+          }
+        } catch (e) {
+          if (e.message.includes('404')) {
+            $('actionsSection').style.display = 'none';
+          }
+        }
+      }
+
+      function renderStats(sessions) {
+        const total = sessions.length;
+        const booked = sessions.filter((s) => s.meeting_booked).length;
+        const passed = sessions.filter((s) => s.assessment?.verdict === 'PASS').length;
+        const hlScores = sessions.filter((s) => s.human_likeness_avg > 0);
+        const avgHL = hlScores.length ? (hlScores.reduce((a, b) => a + b.human_likeness_avg, 0) / hlScores.length).toFixed(1) : '—';
+        const avgTurns = total ? (sessions.reduce((a, b) => a + (b.turns || 0), 0) / total).toFixed(1) : '—';
+
+        $('statsGrid').innerHTML = [
+          { label: 'Total sims', value: total },
+          { label: 'Meeting booked', value: `${booked} (${Math.round((booked / total) * 100)}%)` },
+          { label: 'Assessment PASS', value: `${passed} (${Math.round((passed / total) * 100)}%)` },
+          { label: 'Avg human-likeness', value: `${avgHL}/5` },
+          { label: 'Avg turns', value: avgTurns },
+        ].map((s) => `
+          <div class="stat-card">
+            <p class="stat-label">${s.label}</p>
+            <p class="stat-value">${s.value}</p>
+          </div>
+        `).join('');
+
+        // Per-persona table
+        const byPersona = {};
+        for (const s of sessions) {
+          if (!byPersona[s.persona_id]) byPersona[s.persona_id] = [];
+          byPersona[s.persona_id].push(s);
+        }
+        $('personaTableBody').innerHTML = Object.entries(byPersona).map(([pid, sims]) => {
+          const b = sims.filter((s) => s.meeting_booked).length;
+          const p = sims.filter((s) => s.assessment?.verdict === 'PASS').length;
+          const hl = sims.filter((s) => s.human_likeness_avg > 0);
+          const avgHl = hl.length ? (hl.reduce((a, b) => a + b.human_likeness_avg, 0) / hl.length).toFixed(1) : '—';
+          const avgT = (sims.reduce((a, b) => a + (b.turns || 0), 0) / sims.length).toFixed(1);
+          return `<tr>
+            <td style="font-weight:500">${pid}</td>
+            <td>${b}/${sims.length}</td>
+            <td>${p}/${sims.length}</td>
+            <td>${avgHl}</td>
+            <td>${avgT}</td>
+          </tr>`;
+        }).join('');
+      }
+
+      function renderActions(actions) {
+        $('actionsCount').textContent = `(${actions.length})`;
+        $('actionsList').innerHTML = actions.sort((a, b) => a.priority - b.priority).map((a) => {
+          const cls = a.priority <= 3 ? 'priority-high' : a.priority <= 6 ? 'priority-mid' : 'priority-low';
+          return `
+            <div class="action-card ${cls}">
+              <div class="action-meta">
+                <span class="action-priority">#${a.priority}</span>
+                <span class="action-area">${a.area || 'general'}</span>
+              </div>
+              <p class="action-finding">${escHtml(a.finding || '')}</p>
+              <p class="action-action">→ ${escHtml(a.action || '')}</p>
+              ${a.evidence ? `<p class="action-evidence">"${escHtml(a.evidence)}"</p>` : ''}
+            </div>
+          `;
+        }).join('');
+      }
+
+      function renderPatterns(patterns) {
+        $('patternsList').innerHTML = patterns.map((p) => `
+          <div class="pattern-card">
+            <p>${escHtml(p.pattern || '')}</p>
+            <p class="pattern-meta">${(p.personas_affected || []).join(', ')} · ${p.frequency || ''}</p>
+          </div>
+        `).join('');
+      }
+
+      function escHtml(s) {
+        return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      }
+
+      $('startBatchBtn').addEventListener('click', async () => {
+        $('startBatchBtn').disabled = true;
+        $('runStatus').innerHTML = '<span class="spinner"></span>Starting…';
+        try {
+          const resp = await api('/api/admin/run-batch', { method: 'POST', body: '{}' });
+          $('runStatus').textContent = `Started: ${resp.batch_run_id}`;
+          currentBatchId = resp.batch_run_id;
+          await loadBatchList();
+          await selectBatch(resp.batch_run_id);
+        } catch (e) {
+          $('runStatus').textContent = 'Error: ' + e.message;
+          $('startBatchBtn').disabled = false;
+        }
+      });
+
+      // Initial load
+      loadBatchList();
+    </script>
+  </body>
+</html>

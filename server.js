@@ -6,6 +6,9 @@ import crypto from 'crypto';
 import Anthropic from '@anthropic-ai/sdk';
 import { createStorage } from './storage/index.js';
 import { createAuth } from './middleware/auth.js';
+import { runBatch, randomBatchId, BATCH_PERSONAS, SIMS_PER_PERSONA } from './server/batch_runner.js';
+import { runAnalysis } from './server/analysis_engine.js';
+import { query as dbQuery } from './db/client.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12009,6 +12012,193 @@ app.get('/download/:sessionId', async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   res.setHeader('Content-Disposition', `attachment; filename="mellow-sim-${req.params.sessionId}.json"`);
   res.send(JSON.stringify(artifact, null, 2));
+});
+
+// ─── BATCH RUNNER ────────────────────────────────────────────────────────────
+
+// In-memory store for active batch runs (fallback when DB unavailable)
+const activeBatchRuns = new Map();
+
+function batchRunSummary(run) {
+  return {
+    id: run.id,
+    status: run.status,
+    progress: run.progress,
+    created_at: run.created_at,
+    started_at: run.started_at,
+    finished_at: run.finished_at,
+    analysis_id: run.analysis_id || null,
+    error: run.error || null,
+  };
+}
+
+// POST /api/admin/run-batch — start a new 50-simulation batch run in background
+app.post('/api/admin/run-batch', auth.middleware(), async (req, res) => {
+  const batchRunId = randomBatchId();
+  const now = new Date().toISOString();
+  const config = {
+    personas: BATCH_PERSONAS.map((p) => p.id),
+    sims_per_persona: SIMS_PER_PERSONA,
+    total: BATCH_PERSONAS.length * SIMS_PER_PERSONA,
+  };
+  const runRecord = {
+    id: batchRunId,
+    status: 'running',
+    config,
+    progress: { total: config.total, completed: 0, by_persona: {} },
+    created_at: now,
+    started_at: now,
+    finished_at: null,
+    analysis_id: null,
+    error: null,
+  };
+
+  activeBatchRuns.set(batchRunId, runRecord);
+
+  let db = null;
+  try {
+    db = { query: dbQuery };
+    await dbQuery(
+      `INSERT INTO batch_runs (id, status, config, progress, started_at)
+       VALUES ($1, 'running', $2::jsonb, $3::jsonb, NOW())`,
+      [batchRunId, JSON.stringify(config), JSON.stringify(runRecord.progress)]
+    );
+  } catch {
+    db = null; // File storage fallback
+  }
+
+  // Fire-and-forget background run
+  (async () => {
+    try {
+      const anthropicClient = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+      const sessions = await runBatch(
+        batchRunId, anthropicClient, db,
+        (completed, total, personaId) => {
+          runRecord.progress = { total, completed, by_persona: runRecord.progress.by_persona || {} };
+          if (personaId) {
+            if (!runRecord.progress.by_persona[personaId]) runRecord.progress.by_persona[personaId] = { total: 0, booked: 0 };
+          }
+        }
+      );
+
+      runRecord.status = 'completed';
+      runRecord.finished_at = new Date().toISOString();
+
+      if (db) {
+        await dbQuery(
+          `UPDATE batch_runs SET status='completed', finished_at=NOW(), updated_at=NOW() WHERE id=$1`,
+          [batchRunId]
+        );
+      }
+
+      // Trigger analysis
+      try {
+        const analysis = await runAnalysis(batchRunId, sessions, anthropicClient, db);
+        runRecord.analysis_id = analysis.id;
+        if (db) {
+          await dbQuery(
+            `UPDATE batch_runs SET analysis_id=$1, updated_at=NOW() WHERE id=$2`,
+            [analysis.id, batchRunId]
+          ).catch(() => {});
+        }
+      } catch (analysisErr) {
+        console.error('[batch] analysis failed:', analysisErr.message);
+      }
+    } catch (err) {
+      console.error('[batch] run failed:', err.message);
+      runRecord.status = 'failed';
+      runRecord.error = err.message;
+      runRecord.finished_at = new Date().toISOString();
+      if (db) {
+        await dbQuery(
+          `UPDATE batch_runs SET status='failed', error=$1, finished_at=NOW(), updated_at=NOW() WHERE id=$2`,
+          [err.message, batchRunId]
+        ).catch(() => {});
+      }
+    }
+  })();
+
+  res.status(202).json({ batch_run_id: batchRunId, status: 'running', total: config.total });
+});
+
+// GET /api/admin/batch-runs — list recent batch runs
+app.get('/api/admin/batch-runs', auth.middleware(), async (req, res) => {
+  const limit = Math.min(50, Math.max(1, parseInt(req.query.limit, 10) || 20));
+  const memoryRuns = [...activeBatchRuns.values()].map(batchRunSummary);
+
+  let dbRuns = [];
+  try {
+    const result = await dbQuery(
+      `SELECT id, status, config, progress, error, created_at, started_at, finished_at
+       FROM batch_runs ORDER BY created_at DESC LIMIT $1`,
+      [limit]
+    );
+    dbRuns = result.rows.map((r) => ({
+      id: r.id, status: r.status, config: r.config, progress: r.progress,
+      error: r.error, created_at: r.created_at, started_at: r.started_at, finished_at: r.finished_at,
+    }));
+  } catch { /* DB unavailable */ }
+
+  const seen = new Set();
+  const combined = [...memoryRuns, ...dbRuns].filter((r) => {
+    if (!r?.id || seen.has(r.id)) return false;
+    seen.add(r.id);
+    return true;
+  }).sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || ''))).slice(0, limit);
+
+  res.json(combined);
+});
+
+// GET /api/admin/batch-runs/:id — status + progress
+app.get('/api/admin/batch-runs/:id', auth.middleware(), async (req, res) => {
+  const { id } = req.params;
+  const memRun = activeBatchRuns.get(id);
+  if (memRun) return res.json(batchRunSummary(memRun));
+
+  try {
+    const result = await dbQuery(
+      'SELECT * FROM batch_runs WHERE id=$1',
+      [id]
+    );
+    if (result.rows.length) return res.json(result.rows[0]);
+  } catch { /* DB unavailable */ }
+
+  res.status(404).json({ error: 'Batch run not found' });
+});
+
+// GET /api/admin/batch-runs/:id/sessions — session list for a batch run
+app.get('/api/admin/batch-runs/:id/sessions', auth.middleware(), async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await dbQuery(
+      `SELECT id, persona_id, ordinal, status, assessment, human_likeness_avg, meeting_booked, turns, created_at, finished_at
+       FROM batch_sessions WHERE batch_run_id=$1 ORDER BY persona_id, ordinal`,
+      [id]
+    );
+    return res.json(result.rows);
+  } catch {
+    res.status(503).json({ error: 'Database unavailable' });
+  }
+});
+
+// GET /api/admin/batch-runs/:id/analysis — analysis report for a batch run
+app.get('/api/admin/batch-runs/:id/analysis', auth.middleware(), async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await dbQuery(
+      'SELECT * FROM analysis_reports WHERE batch_run_id=$1 ORDER BY created_at DESC LIMIT 1',
+      [id]
+    );
+    if (result.rows.length) return res.json(result.rows[0]);
+    res.status(404).json({ error: 'No analysis report found for this batch run' });
+  } catch {
+    res.status(503).json({ error: 'Database unavailable' });
+  }
+});
+
+// ─── ANALYSIS SCREEN ─────────────────────────────────────────────────────────
+app.get('/analysis', auth.middleware(), (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'analysis.html'));
 });
 
 app.get('*', (_req, res) => {
