@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import crypto from 'crypto';
 import Anthropic from '@anthropic-ai/sdk';
 import { createStorage } from './storage/index.js';
+import { createAuth } from './middleware/auth.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -2050,6 +2051,17 @@ app.get('/version.json', (_req, res) => {
     runtime: 'express',
   });
 });
+app.get('/healthz', (_req, res) => res.json({ ok: true }));
+
+const auth = createAuth();
+app.get('/login', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+app.post('/auth/login', auth.loginHandler());
+app.post('/auth/logout', auth.logoutHandler());
+app.get('/auth/whoami', auth.middleware(), auth.whoamiHandler());
+
+app.use(auth.middleware());
 app.use(express.static(path.join(__dirname, 'public')));
 
 function now() {

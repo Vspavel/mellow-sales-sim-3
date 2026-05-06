@@ -647,6 +647,15 @@ async function createPostgresStorage(config) {
 
 export async function createStorage(config) {
   const driver = String(process.env.STORAGE_DRIVER || 'file').trim().toLowerCase();
-  if (driver === 'postgres') return createPostgresStorage(config);
+  const isProduction = String(process.env.NODE_ENV || '').toLowerCase() === 'production';
+  if (isProduction && driver !== 'postgres') {
+    throw new Error(`production deploys must run with STORAGE_DRIVER=postgres (got '${driver}'); refusing to start`);
+  }
+  if (driver === 'postgres') {
+    if (!process.env.DATABASE_URL) {
+      throw new Error('STORAGE_DRIVER=postgres requires DATABASE_URL');
+    }
+    return createPostgresStorage(config);
+  }
   return createFileStorage(config);
 }

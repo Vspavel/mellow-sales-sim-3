@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mellow Sales Simulator — Sign in</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: #f6f6f4;
+      color: #1c1c1a;
+    }
+    .card {
+      width: min(380px, calc(100vw - 32px));
+      padding: 28px 24px 24px;
+      background: #ffffff;
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 14px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+    }
+    h1 {
+      margin: 0 0 4px 0;
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .sub {
+      margin: 0 0 20px 0;
+      font-size: 13px;
+      color: #6b6b66;
+    }
+    label {
+      display: block;
+      font-size: 12px;
+      color: #4a4a45;
+      margin-bottom: 6px;
+    }
+    input[type=text], input[type=password] {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px 12px;
+      font-size: 14px;
+      border: 1px solid rgba(0,0,0,0.15);
+      border-radius: 8px;
+      background: #fafaf8;
+      color: inherit;
+      margin-bottom: 14px;
+    }
+    input:focus {
+      outline: none;
+      border-color: #1c1c1a;
+      background: #ffffff;
+    }
+    button {
+      width: 100%;
+      padding: 11px 14px;
+      border: 0;
+      border-radius: 8px;
+      background: #1c1c1a;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    button[disabled] { opacity: 0.6; cursor: not-allowed; }
+    .err {
+      margin: 12px 0 0 0;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: #fee;
+      color: #962020;
+      font-size: 13px;
+      display: none;
+    }
+    .err.visible { display: block; }
+    @media (prefers-color-scheme: dark) {
+      body { background: #161614; color: #f1f1ec; }
+      .card { background: #1f1f1d; border-color: rgba(255,255,255,0.08); }
+      .sub { color: #a3a39d; }
+      label { color: #c9c9c2; }
+      input[type=text], input[type=password] { background: #2a2a27; border-color: rgba(255,255,255,0.12); }
+      input:focus { background: #1f1f1d; border-color: #f1f1ec; }
+      button { background: #f1f1ec; color: #1c1c1a; }
+      .err { background: #3a1d1d; color: #f6c3c3; }
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Mellow Sales Simulator</h1>
+    <p class="sub">Sign in to continue.</p>
+    <form id="login">
+      <label for="username">Username</label>
+      <input id="username" type="text" autocomplete="username" autocapitalize="off" autocorrect="off" required />
+      <label for="password">Password</label>
+      <input id="password" type="password" autocomplete="current-password" required />
+      <button id="submit" type="submit">Sign in</button>
+      <div id="err" class="err" role="alert"></div>
+    </form>
+  </main>
+  <script>
+    (function () {
+      const form = document.getElementById('login');
+      const submit = document.getElementById('submit');
+      const errBox = document.getElementById('err');
+      const params = new URLSearchParams(window.location.search);
+      const next = params.get('next') || '/';
+      function showError(msg) {
+        errBox.textContent = msg;
+        errBox.classList.add('visible');
+      }
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        errBox.classList.remove('visible');
+        submit.disabled = true;
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+        try {
+          const res = await fetch('/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password, next }),
+            credentials: 'same-origin',
+          });
+          if (res.status === 429) {
+            showError('Too many failed attempts. Try again in 15 minutes.');
+            submit.disabled = false;
+            return;
+          }
+          if (!res.ok) {
+            showError('Invalid credentials.');
+            submit.disabled = false;
+            return;
+          }
+          const data = await res.json();
+          window.location.href = data.next || '/';
+        } catch (err) {
+          showError('Network error. Try again.');
+          submit.disabled = false;
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
