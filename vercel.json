@@ -7,6 +7,8 @@
   },
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index.js" },
-    { "source": "/download/(.*)", "destination": "/api/index.js" }
+    { "source": "/auth/(.*)", "destination": "/api/index.js" },
+    { "source": "/download/(.*)", "destination": "/api/index.js" },
+    { "source": "/(.*)", "destination": "/api/index.js" }
   ]
 }
