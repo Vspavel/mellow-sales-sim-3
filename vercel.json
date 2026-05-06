@@ -5,10 +5,10 @@
       "maxDuration": 60
     }
   },
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index.js" },
-    { "source": "/auth/(.*)", "destination": "/api/index.js" },
-    { "source": "/download/(.*)", "destination": "/api/index.js" },
-    { "source": "/(.*)", "destination": "/api/index.js" }
+  "routes": [
+    { "src": "/fonts/(.*)", "dest": "/fonts/$1" },
+    { "src": "/styles.css", "dest": "/styles.css" },
+    { "src": "/app.js", "dest": "/app.js" },
+    { "src": "/(.*)", "dest": "/api/index.js" }
   ]
 }
