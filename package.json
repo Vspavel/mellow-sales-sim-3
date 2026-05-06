@@ -1,6 +1,6 @@
 {
-  "name": "mellow-sales-sim",
-  "version": "1.0.0",
+  "name": "mellow-sales-sim-3",
+  "version": "3.0.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -16,5 +16,6 @@
     "express": "^4.21.2",
     "nodemailer": "^8.0.5",
     "pg": "^8.16.3"
-  }
+  },
+  "description": "Mellow Sales Simulator v3.0"
 }
