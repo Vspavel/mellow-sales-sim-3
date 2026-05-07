@@ -308,10 +308,6 @@
 
         <section class="phase-panel phase-panel--run hidden" id="runPanel">
           <header class="panel-header panel-header--run">
-            <div class="run-header-copy">
-              <p class="phase-label">Conversation cockpit</p>
-              <h1>Run the conversation</h1>
-            </div>
             <div class="run-meta">
               <div class="run-meta-top">
                 <strong id="runStatus"></strong>
@@ -337,7 +333,7 @@
                   <span id="runActualSignal" class="run-signal-pill run-signal-pill--active">Waiting for session</span>
                 </div>
               </div>
-              <p id="runSignalConfirmation" class="muted run-signal-confirmation">The live trigger should match the selected scenario.</p>
+              <p id="runSignalConfirmation" class="muted run-signal-confirmation"></p>
             </section>
 
             <section class="run-stage-card run-stage-card--progress">
@@ -357,10 +353,6 @@
                 </div>
 
                 <div class="conversation-thread-shell">
-                  <div class="conversation-thread-head">
-                    <strong class="conversation-thread-title">Message exchange</strong>
-                  </div>
-
                   <div id="transcript" class="transcript transcript--cockpit" aria-live="polite"></div>
 
                   <div class="conversation-thread-footer">
@@ -378,10 +370,7 @@
                     </div>
 
                     <div class="composer-shell composer-shell--messaging">
-                      <div class="composer-focus-wrap">
-                        <span class="composer-focus-label">Current focus</span>
-                        <p class="composer-focus" id="composerFocus"></p>
-                      </div>
+                      <p class="composer-focus" id="composerFocus"></p>
                       <form id="messageForm" class="composer composer--messaging">
                         <textarea id="messageInput" rows="3" placeholder="Write your first touch or next message"></textarea>
                         <div class="composer-row composer-row--messaging">
@@ -423,25 +412,20 @@
                 <div id="nextMovePanel"></div>
               </section>
 
-              <details class="context-stack-details" open>
-                <summary>Supporting context</summary>
-                <div class="context-stack-body">
-                  <section class="run-insight-card run-insight-card--compact" id="buyerBriefCard">
-                    <div class="run-insight-head">
-                      <p class="phase-label">Buyer brief</p>
-                    </div>
-                    <div id="buyerBriefPanel"></div>
-                  </section>
-
-                  <section class="run-insight-card run-insight-card--compact">
-                    <div class="run-insight-head">
-                      <p class="phase-label">Buyer readiness</p>
-                      <span id="buyerStateTurnMeta" class="muted run-insight-meta">Baseline before first seller turn</span>
-                    </div>
-                    <div id="buyerStateLivePanel"></div>
-                  </section>
+              <section class="run-insight-card run-insight-card--compact" id="buyerBriefCard">
+                <div class="run-insight-head">
+                  <p class="phase-label">Buyer brief</p>
                 </div>
-              </details>
+                <div id="buyerBriefPanel"></div>
+              </section>
+
+              <section class="run-insight-card run-insight-card--compact">
+                <div class="run-insight-head">
+                  <p class="phase-label">Buyer readiness</p>
+                  <span id="buyerStateTurnMeta" class="muted run-insight-meta">Baseline before first seller turn</span>
+                </div>
+                <div id="buyerStateLivePanel"></div>
+              </section>
             </aside>
           </div>
 
