@@ -683,61 +683,96 @@ button:disabled { opacity: 0.45; cursor: default; }
 
 /* ── Setup page v3.1 ─────────────────────────────────────────────────────────── */
 
-/* Filter strip: compact, de-weighted row of context selectors */
+/* Filter strip: compact, de-weighted row of context selectors. All four cells
+   share the same visual height so the row reads as a single rhythmic system,
+   and shrink/wrap together rather than letting one element jump to a new row. */
 .setup-filter-strip {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 20px;
+  gap: 14px 18px;
   align-items: flex-end;
   padding-bottom: 20px;
   border-bottom: 1px solid var(--border-soft);
 }
+.setup-filter-strip > .field-group {
+  flex: 1 1 150px;
+  min-width: 130px;
+  gap: 6px;
+}
 
-/* Smaller padding for the fast-select fields in the strip */
+/* Unified select treatment for the strip + persona/randomizer rows.
+   Same height, radius, padding, chevron, focus ring as the design system. */
 .setup-select {
-  padding: 8px 10px;
+  height: 36px;
+  padding: 0 32px 0 12px;
   font-size: 0.84rem;
+  line-height: 1;
   border-radius: var(--radius-sm);
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2378726b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 10px center;
-  padding-right: 32px;
   cursor: pointer;
 }
 
-/* Instrument toggle: compact binary, replaces the heavy segmented pill */
+/* Instrument toggle: same height as the selects so the strip's rhythm holds. */
 .setup-env-toggle {
   display: inline-flex;
+  height: 36px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   overflow: hidden;
   background: var(--surface);
+  font-size: 0.84rem;
 }
 .env-btn {
   background: transparent;
   color: var(--muted);
   border: none;
   border-radius: 0;
-  padding: 8px 14px;
+  padding: 0 14px;
+  height: 100%;
   font-size: 0.84rem;
   font-weight: 500;
   letter-spacing: 0;
-}
-.setup-env-toggle {
-  font-size: 0.84rem;
+  display: inline-flex;
+  align-items: center;
 }
 .env-btn + .env-btn { border-left: 1px solid var(--border); }
 .env-btn.is-active { background: var(--text); color: var(--bg); font-weight: 600; }
 .env-btn:hover:not(:disabled) { filter: none; background: var(--surface-warm); color: var(--text); }
 .env-btn.is-active:hover:not(:disabled) { background: var(--text-soft); color: var(--bg); }
 
-/* Persona row: group (narrow) + persona (wide) side by side */
+/* Persona row: group reads as a leading prefix to the persona select.
+   Visually attached so the eye reads "[group] · [persona]" as one decision. */
 .setup-persona-row {
   display: grid;
-  grid-template-columns: 200px minmax(0, 1fr);
-  gap: 14px;
+  grid-template-columns: minmax(180px, 220px) minmax(0, 1fr);
+  gap: 0;
   align-items: end;
+}
+.setup-persona-row__group .setup-select {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-right: 0;
+  background-color: var(--surface-warm);
+  font-weight: 600;
+  color: var(--text);
+}
+.setup-persona-row__persona .setup-select {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+@media (max-width: 640px) {
+  .setup-persona-row {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .setup-persona-row__group .setup-select,
+  .setup-persona-row__persona .setup-select {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+  }
 }
 
 /* Secondary settings: visually grouped and de-weighted */
