@@ -13,79 +13,73 @@
     <style>
       .analysis-shell { max-width: 860px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
       .analysis-header { margin-bottom: 2rem; }
-      .analysis-header h1 { font-size: 1.4rem; font-weight: 600; margin: 0 0 .25rem; }
-      .analysis-header p { font-size: .875rem; color: #666; margin: 0; }
+      .analysis-header h1 { font-family: var(--font-display); font-size: 2rem; font-weight: 500; letter-spacing: -0.025em; margin: 0 0 .25rem; color: var(--text); }
+      .analysis-header p { font-size: .875rem; color: var(--muted); margin: 0; }
 
       .batch-list { display: flex; flex-direction: column; gap: .5rem; margin-bottom: 2.5rem; }
       .batch-item {
         display: flex; align-items: center; justify-content: space-between;
-        padding: .75rem 1rem; border: 1px solid #e8e0d6; border-radius: 6px;
-        cursor: pointer; background: #fff; transition: border-color .15s;
+        padding: .75rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-sm);
+        cursor: pointer; background: var(--surface); transition: border-color .15s;
       }
-      .batch-item:hover { border-color: #232222; }
-      .batch-item.active { border-color: #ff6f23; background: #fff9f6; }
-      .batch-item-id { font-family: monospace; font-size: .8rem; color: #999; }
+      .batch-item:hover { border-color: var(--border-strong); }
+      .batch-item.active { border-color: var(--accent); background: var(--accent-softest); }
+      .batch-item-id { font-family: monospace; font-size: .8rem; color: var(--muted); }
       .batch-item-status { font-size: .8rem; font-weight: 500; }
-      .status-running { color: #f59e0b; }
-      .status-completed { color: #16a34a; }
-      .status-failed { color: #dc2626; }
-
-      .run-btn {
-        background: #232222; color: #f8f2e9; border: none; border-radius: 5px;
-        padding: .625rem 1.25rem; font-size: .875rem; font-weight: 500; cursor: pointer;
-        transition: opacity .15s;
-      }
-      .run-btn:hover { opacity: .85; }
-      .run-btn:disabled { opacity: .45; cursor: not-allowed; }
+      .status-running { color: var(--warn-text); }
+      .status-completed { color: var(--success-text); }
+      .status-failed { color: var(--fail-text); }
 
       .report-section { margin-bottom: 2.5rem; }
-      .report-section h2 { font-size: 1rem; font-weight: 600; margin: 0 0 1rem; border-bottom: 1px solid #e8e0d6; padding-bottom: .5rem; }
+      .report-section h2 { font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin: 0 0 1rem; border-bottom: 1px solid var(--border); padding-bottom: .5rem; }
 
       .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: .75rem; margin-bottom: 1.5rem; }
-      .stat-card { padding: .875rem 1rem; border: 1px solid #e8e0d6; border-radius: 6px; background: #faf7f3; }
-      .stat-card .stat-label { font-size: .75rem; color: #888; margin: 0 0 .2rem; }
-      .stat-card .stat-value { font-size: 1.5rem; font-weight: 600; color: #232222; margin: 0; }
+      .stat-card { padding: .875rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-subtle); }
+      .stat-card .stat-label { font-size: .68rem; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin: 0 0 .35rem; }
+      .stat-card .stat-value { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.04em; color: var(--text); margin: 0; }
 
       .actions-list { display: flex; flex-direction: column; gap: .875rem; }
       .action-card {
-        padding: 1rem 1.125rem; border: 1px solid #e8e0d6; border-radius: 6px; background: #fff;
-        border-left: 3px solid #ff6f23;
+        padding: 1rem 1.125rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface);
+        border-left: 3px solid var(--accent);
       }
-      .action-card.priority-high { border-left-color: #dc2626; }
-      .action-card.priority-mid { border-left-color: #f59e0b; }
-      .action-card.priority-low { border-left-color: #86efac; }
+      .action-card.priority-high { border-left-color: var(--fail-text); }
+      .action-card.priority-mid { border-left-color: var(--warn-text); }
+      .action-card.priority-low { border-left-color: var(--viridian); }
       .action-meta { display: flex; gap: .5rem; align-items: center; margin-bottom: .5rem; }
-      .action-priority { font-size: .75rem; font-weight: 600; color: #999; font-family: monospace; }
-      .action-area { font-size: .75rem; background: #f1ece5; color: #555; padding: .15rem .5rem; border-radius: 3px; }
-      .action-finding { font-size: .875rem; color: #232222; margin: 0 0 .35rem; font-weight: 500; }
-      .action-action { font-size: .875rem; color: #444; margin: 0 0 .35rem; }
-      .action-evidence { font-size: .78rem; color: #888; font-style: italic; margin: 0; padding: .35rem .6rem; border-left: 2px solid #e8e0d6; }
+      .action-priority { font-size: .75rem; font-weight: 600; color: var(--muted); font-family: monospace; }
+      .action-area { font-size: .75rem; background: var(--surface-warm); color: var(--text-soft); padding: .15rem .5rem; border-radius: 4px; }
+      .action-finding { font-size: .875rem; color: var(--text); margin: 0 0 .35rem; font-weight: 500; }
+      .action-action { font-size: .875rem; color: var(--text-soft); margin: 0 0 .35rem; }
+      .action-evidence { font-size: .78rem; color: var(--muted); font-style: italic; margin: 0; padding: .35rem .6rem; border-left: 2px solid var(--border); }
 
       .patterns-list { display: flex; flex-direction: column; gap: .625rem; }
-      .pattern-card { padding: .75rem 1rem; border: 1px solid #e8e0d6; border-radius: 6px; background: #faf7f3; }
+      .pattern-card { padding: .75rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-subtle); }
       .pattern-card p { margin: 0 0 .25rem; font-size: .875rem; }
-      .pattern-meta { font-size: .78rem; color: #888; }
+      .pattern-meta { font-size: .78rem; color: var(--muted); }
 
       .persona-table { width: 100%; border-collapse: collapse; font-size: .875rem; }
-      .persona-table th { text-align: left; padding: .5rem .75rem; font-weight: 600; border-bottom: 2px solid #e8e0d6; background: #faf7f3; }
-      .persona-table td { padding: .5rem .75rem; border-bottom: 1px solid #f0ebe3; }
+      .persona-table th { text-align: left; padding: .5rem .75rem; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); border-bottom: 1px solid var(--border); background: var(--surface-subtle); }
+      .persona-table td { padding: .5rem .75rem; border-bottom: 1px solid var(--border-soft); color: var(--text); }
       .persona-table tr:last-child td { border-bottom: none; }
 
-      .progress-bar-wrap { height: 4px; background: #e8e0d6; border-radius: 2px; overflow: hidden; margin: .5rem 0 1rem; }
-      .progress-bar-fill { height: 100%; background: #ff6f23; transition: width .4s ease; }
+      .progress-bar-wrap { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; margin: .5rem 0 1rem; }
+      .progress-bar-fill { height: 100%; background: var(--accent); transition: width .4s ease; }
 
-      .empty-state { text-align: center; padding: 3rem 1rem; color: #aaa; font-size: .9rem; }
-      .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid #e8e0d6; border-top-color: #232222; border-radius: 50%; animation: spin .7s linear infinite; margin-right: .4rem; vertical-align: middle; }
+      .empty-state { text-align: center; padding: 3rem 1rem; color: var(--muted); font-size: .9rem; }
+      .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--text); border-radius: 50%; animation: spin .7s linear infinite; margin-right: .4rem; vertical-align: middle; }
       @keyframes spin { to { transform: rotate(360deg); } }
     </style>
   </head>
-  <body style="background: #f8f2e9; min-height: 100vh;">
+  <body>
     <div class="analysis-shell">
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 1.5rem;">
-        <a href="/" style="font-size:.875rem; color:#666; text-decoration:none;">← Back to Simulator</a>
+        <a href="/" style="font-size:.875rem; color:var(--muted); text-decoration:none;">← Back to Simulator</a>
         <a class="app-brand-link" href="/" style="text-decoration:none; display:flex; align-items:center; gap:.5rem;">
-          <span style="font-size:1.1rem; font-weight:600; color:#232222;">mellow</span>
-          <span style="font-size:.8rem; color:#999;">batch analysis</span>
+          <span class="mellow-logo mellow-logo--xs">
+            <span class="mellow-logo__word">mellow</span><span class="mellow-logo__mark"></span>
+          </span>
+          <span style="font-size:.8rem; color:var(--muted);">batch analysis</span>
         </a>
       </div>
 
@@ -95,15 +89,15 @@
       </div>
 
       <div style="display:flex; gap:1rem; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap;">
-        <button id="startBatchBtn" class="run-btn">Run new batch (50 sims)</button>
-        <span id="runStatus" style="font-size:.875rem; color:#666;"></span>
+        <button id="startBatchBtn">Run new batch (50 sims)</button>
+        <span id="runStatus" style="font-size:.875rem; color:var(--muted);"></span>
       </div>
 
       <div id="batchList" class="batch-list"></div>
 
       <div id="report" style="display:none;">
         <div id="reportProgress" style="display:none;">
-          <p style="font-size:.875rem; color:#666; margin:0 0 .25rem;"><span class="spinner"></span>Running simulations…</p>
+          <p style="font-size:.875rem; color:var(--muted); margin:0 0 .25rem;"><span class="spinner"></span>Running simulations…</p>
           <div class="progress-bar-wrap"><div id="progressFill" class="progress-bar-fill" style="width:0%"></div></div>
           <p id="progressLabel" style="font-size:.78rem; color:#aaa; margin:0;"></p>
         </div>
@@ -118,7 +112,7 @@
         </div>
 
         <div id="actionsSection" class="report-section" style="display:none;">
-          <h2>Improvement actions <span id="actionsCount" style="font-size:.85rem; color:#aaa; font-weight:400;"></span></h2>
+          <h2>Improvement actions <span id="actionsCount" style="font-size:.85rem; color:var(--muted); font-weight:400;"></span></h2>
           <div id="actionsList" class="actions-list"></div>
         </div>
 

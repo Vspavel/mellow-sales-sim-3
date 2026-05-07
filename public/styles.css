@@ -675,6 +675,14 @@ button:disabled { opacity: 0.45; cursor: default; }
 .inheritance-card p { line-height: 1.5; }
 .settings-layer-hidden { display: none !important; }
 
+/* v3.1 — Hierarchy restoration: orange reserved for section-level context only.
+   Card-level labels (inside cards/stage panels) become muted to stop competing. */
+.run-insight-card:not(.run-insight-card--primary) .phase-label,
+.run-stage-card .phase-label,
+.conversation-stage-card .phase-label {
+  color: var(--muted);
+}
+
 @media (max-width: 960px) {
   .panel-header--run, .run-top-grid, .cockpit-layout, .analytics-reasons-grid, .stage-reason-grid { grid-template-columns: 1fr; }
   .cockpit-sidebar--context { position: static; }
