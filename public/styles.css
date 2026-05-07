@@ -59,11 +59,12 @@
   --border: #ede2d6;         /* pearl-bush-100 / stone-beige */
   --border-strong: #d6c9b8;
   --border-soft: #f0e6da;
-  /* Brand accent — orange */
+  /* Brand accent — orange. Tokens marked with [DS-ext] are pending the
+     extension request in MEL-1767 (orange-600, peach-glaze-100/etc.). */
   --accent: #ff6f23;         /* orange-500 / Pantone 1585 C */
-  --accent-hover: #e85a14;
+  --accent-hover: #e85a14;   /* [DS-ext] orange-600 candidate */
   --accent-soft: #f6d8ba;    /* peach-glaze-200 */
-  --accent-softest: #fce8d4;
+  --accent-softest: #fce8d4; /* [DS-ext] peach-glaze-100 candidate */
   --accent-num: rgba(255, 111, 35, 0.14);
   /* Brand secondary */
   --honey: #ffb772;          /* secondary-honey-glow */
@@ -163,30 +164,11 @@ button:disabled { opacity: 0.45; cursor: default; }
   font-feature-settings: 'liga', 'dlig';
 }
 .mellow-logo__word { font-style: normal; }
-.mellow-logo__mark {
-  display: inline-block;
-  width: 0.42em; height: 0.62em;
-  margin-left: 0.04em;
-  position: relative;
-  flex-shrink: 0;
-  align-self: flex-start;
-  margin-top: 0.06em;
-}
-.mellow-logo__mark::before,
-.mellow-logo__mark::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 0.11em;
-  background: currentColor;
-}
-.mellow-logo__mark::before { left: 0; transform: skewX(-18deg); transform-origin: bottom; }
-.mellow-logo__mark::after  { right: 0; transform: skewX(18deg); transform-origin: bottom; background: var(--accent); width: 0.06em; }
+/* NOTE: the Mellow brand `w`-glyph is a custom SVG that we do not yet have a
+   licensed copy of (tracked in MEL-1768). Until the official asset lands we
+   render the wordmark only — no synthesized glyph. */
 .mellow-logo--accent .mellow-logo__word { color: var(--accent); }
-.mellow-logo--accent .mellow-logo__mark::before { background: var(--accent); }
 .mellow-logo--invert { color: var(--bg); }
-.mellow-logo--invert .mellow-logo__mark::before { background: var(--bg); }
 
 .mellow-logo--sm { font-size: 1.3rem; }
 .mellow-logo--xs { font-size: 1rem; }
@@ -198,10 +180,10 @@ button:disabled { opacity: 0.45; cursor: default; }
   display: flex;
   flex-direction: column;
   gap: 22px;
-  padding: 24px 20px;
+  padding: 24px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 20px;
+  border-radius: var(--radius-card);
   min-height: calc(100dvh - 56px);
   box-shadow: var(--shadow-sm);
 }
@@ -215,10 +197,9 @@ button:disabled { opacity: 0.45; cursor: default; }
   color: var(--text);
   margin-top: 8px;
 }
-.sidebar-tagline { font-size: 0.82rem; line-height: 1.5; margin-top: 6px; }
 .sidebar-nav { display: flex; flex-direction: column; gap: 18px; }
 .sidebar-group { display: flex; flex-direction: column; gap: 6px; }
-.sidebar-group-label { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em; color: var(--muted); padding-left: 4px; }
+.sidebar-group-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); padding-left: 4px; }
 .sidebar-nav-btn {
   width: 100%;
   text-align: left;
@@ -239,8 +220,8 @@ button:disabled { opacity: 0.45; cursor: default; }
 }
 .sidebar-nav-btn.is-active,
 .sidebar-nav-btn.is-active:hover:not(:disabled) {
-  background: var(--accent-softest);
-  color: var(--accent-hover);
+  background: var(--accent-soft);
+  color: var(--accent);
   border-color: var(--accent-soft);
   font-weight: 600;
 }
@@ -255,23 +236,20 @@ button:disabled { opacity: 0.45; cursor: default; }
 .panel-header { display: flex; flex-direction: column; gap: 8px; margin-bottom: 4px; }
 .panel-header h1 {
   font-family: var(--font-display);
-  font-size: 2.4rem;
+  font-size: 2.25rem;
   line-height: 1.05;
   font-weight: 500;
   letter-spacing: -0.025em;
   color: var(--text);
-  font-feature-settings: 'ss01';
-  font-optical-sizing: auto;
-  font-variation-settings: 'opsz' 144, 'SOFT' 50;
 }
 .app-brand-link { display: inline-flex; flex-direction: column; gap: 4px; width: fit-content; color: inherit; text-decoration: none; }
 .app-brand-link:hover h1, .app-brand-link:focus-visible h1 { color: var(--accent); }
 .app-brand-link--compact { gap: 0; }
 .phase-label, .field-label {
-  font-size: 0.66rem;
+  font-size: 0.72rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   color: var(--accent);
   font-family: var(--font-body);
 }
@@ -629,7 +607,7 @@ button:disabled { opacity: 0.45; cursor: default; }
 .editor-actions .danger-btn { margin-right: auto; }
 .ghost-btn { background: transparent; color: var(--text); border: 1px solid var(--border); padding: 9px 18px; font-weight: 500; }
 .ghost-btn:hover:not(:disabled) { background: var(--surface-warm); border-color: var(--border-strong); }
-.secondary-btn { background: var(--accent-soft); color: var(--accent-hover); border: 1px solid transparent; font-weight: 600; }
+.secondary-btn { background: var(--accent-soft); color: var(--accent); border: 1px solid transparent; font-weight: 600; }
 .secondary-btn:hover:not(:disabled) { background: var(--honey); color: var(--text); }
 .danger-btn { background: var(--fail-bg); color: var(--fail-text); border: 1px solid color-mix(in srgb, var(--fail-text) 22%, transparent); font-weight: 600; }
 .danger-btn:hover:not(:disabled) { background: var(--fail-text); color: #fff; opacity: 1; }
@@ -739,9 +717,9 @@ button:disabled { opacity: 0.45; cursor: default; }
   align-items: center;
 }
 .env-btn + .env-btn { border-left: 1px solid var(--border); }
-.env-btn.is-active { background: var(--text); color: var(--bg); font-weight: 600; }
+.env-btn.is-active { background: var(--surface-warm); color: var(--accent); font-weight: 600; box-shadow: var(--shadow-sm); }
 .env-btn:hover:not(:disabled) { filter: none; background: var(--surface-warm); color: var(--text); }
-.env-btn.is-active:hover:not(:disabled) { background: var(--text-soft); color: var(--bg); }
+.env-btn.is-active:hover:not(:disabled) { background: var(--surface-warm); color: var(--accent); }
 
 /* Persona row: group reads as a leading prefix to the persona select.
    Visually attached so the eye reads "[group] · [persona]" as one decision. */
