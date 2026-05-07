@@ -11633,7 +11633,7 @@ app.post('/api/sessions/:id/message', async (req, res) => {
     session.meta.ghost_turns = (session.meta.ghost_turns || 0) + 1;
     sellerEntry.buyer_reply_outcome = 'silent';
   }
-  if (reply && !session.meta.meeting_booked && (detectBuyerMeetingAcceptance(reply, session.language) || detectConditionalLegalReviewAcceptance(reply, sellerText, personaMeta(session)?.id))) {
+  if (reply && !session.meta.meeting_booked && (detectBuyerMeetingAcceptance(reply, session.language) || detectConditionalLegalReviewAcceptance(reply, normalizedSellerText, personaMeta(session)?.id))) {
     session.meta.meeting_booked = true;
     session.meta.meeting_booked_turn = sellerMessages(session).length;
   }
