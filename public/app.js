@@ -1290,7 +1290,7 @@ function renderReactionStrip(transition) {
     : '';
 
   const overflowList = overflow > 0
-    ? `<ul class="bubble-reaction__overflow-list hidden">${deltas.slice(3, 6).map((d) => {
+    ? `<ul class="bubble-reaction__overflow-list hidden">${deltas.slice(3).map((d) => {
         const text = formatReactionDelta(d);
         const arrow = d.value > 0 ? '▲' : '▼';
         return `<li>${escapeHtml(d.label)} ${escapeHtml(arrow)} ${escapeHtml(text)}</li>`;
@@ -1396,11 +1396,22 @@ function renderEndCard({ fromHistory = false } = {}) {
     ? { good: 'Что получилось', off: 'Что сбоило', next: 'Что улучшить', startAnother: 'Запустить ещё', download: 'Скачать', share: 'Скопировать ссылку', back: 'Назад в историю' }
     : { good: 'What was good', off: 'What was off', next: 'What to try next time', startAnother: 'Start another', download: 'Download', share: 'Share link', back: 'Back to history' };
 
+  const emptyCopy = ru
+    ? { good: 'Без явных сильных моментов в этой сессии — вернёмся в следующий раз.', off: 'Серьёзных провалов нет — дальше держим планку.' }
+    : { good: 'No clear strengths this run — keep building them next time.', off: 'No major slips this run — keep the bar where it is.' };
+
+  const renderBlock = (label, items, fallbackLine) => {
+    const body = items.length
+      ? `<ul class="run-end__list">${items.map(renderItem).join('')}</ul>`
+      : `<p class="run-end__empty muted">${escapeHtml(fallbackLine)}</p>`;
+    return `<section class="run-end__block"><p class="run-end__label">${escapeHtml(label)}</p>${body}</section>`;
+  };
+
   runEndCard.innerHTML = `
     <p class="run-end__verdict"><span class="${verdictDotClass}" aria-hidden="true"></span>${escapeHtml(verdictLine)}</p>
     <p class="run-end__summary muted">${escapeHtml(summary)}</p>
-    ${goodItems.length ? `<section class="run-end__block"><p class="run-end__label">${escapeHtml(labels.good)}</p><ul class="run-end__list">${goodItems.map(renderItem).join('')}</ul></section>` : ''}
-    ${offItems.length ? `<section class="run-end__block"><p class="run-end__label">${escapeHtml(labels.off)}</p><ul class="run-end__list">${offItems.map(renderItem).join('')}</ul></section>` : ''}
+    ${renderBlock(labels.good, goodItems, emptyCopy.good)}
+    ${renderBlock(labels.off, offItems, emptyCopy.off)}
     <section class="run-end__block"><p class="run-end__label">${escapeHtml(labels.next)}</p><ul class="run-end__list">${improvements.map(renderItem).join('')}</ul></section>
     <div class="run-end__actions">
       <button type="button" class="launch-btn" data-end-action="start-another">${escapeHtml(labels.startAnother)}</button>
@@ -2120,6 +2131,14 @@ function updateRunState() {
     composerFocus.textContent = isLanguageRu()
       ? `Текущий фрейм: ${move} через ${proof}.`
       : `Currently framing: ${move} via ${proof}.`;
+  }
+
+  if (messageInput) {
+    const ru = isLanguageRu();
+    const isEmail = state.session?.dialogue_type === 'email';
+    messageInput.placeholder = isEmail
+      ? (ru ? 'Напишите письмо: приветствие, тело, подпись…' : 'Compose your email — greeting, body, sign-off…')
+      : (ru ? 'Напишите следующее сообщение…' : 'Write your next move…');
   }
 
   setComposerVisibility();
