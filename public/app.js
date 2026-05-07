@@ -2915,7 +2915,7 @@ startConvBtn.addEventListener('click', async () => {
     await selectPersona(state.selectedPersonaId);
   }
   showPhase('run');
-  updateRunState();
+  renderTranscript();
   const isEmail = state.session?.dialogue_type === 'email';
   messageInput.placeholder = isEmail
     ? 'Hi [Name],\n\n[Your message here]\n\nBest, [Your name]'
@@ -3470,7 +3470,7 @@ Promise.all([loadDoctrineConfig(), loadPersonas()]).then(async () => {
   }
   if (initialRoute.phase === 'run' && state.session) {
     showPhase('run', { replace: true });
-    updateRunState();
+    renderTranscript();
     return;
   }
   showPhase('setup', { replace: true });
