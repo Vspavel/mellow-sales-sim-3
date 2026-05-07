@@ -1225,7 +1225,7 @@ button:disabled { opacity: 0.45; cursor: default; }
 /* Responsive */
 @media (max-width: 1023px) {
   .run-stage-rail { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 16px; }
-  .run-stage-rail .progress-step + .progress-step::before { display: none; }
+  .run-stage-rail::before { display: none; }
 }
 @media (max-width: 767px) {
   .run-header h1 { font-size: 1.875rem; }
