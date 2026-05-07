@@ -1001,11 +1001,7 @@ function renderBuyerStateLivePanel() {
 
   const latestTransition = latestBuyerStateTransition();
   const turnIndex = Number(latestTransition?.turn_index || 0);
-  const readinessLabel = buyerState.next_step_likelihood >= 0.66
-    ? 'Ready for a bounded next step'
-    : buyerState.next_step_likelihood >= 0.4
-    ? 'Interest is forming, still needs proof'
-    : 'Still early, keep narrowing and clarifying';
+  const readinessLabel = readinessSentence(buyerState.next_step_likelihood);
   if (buyerStateTurnMeta) {
     buyerStateTurnMeta.textContent = turnIndex
       ? `Synced to engine state after seller turn ${turnIndex}`
@@ -1238,7 +1234,7 @@ function buildReactionDeltas(transition) {
   return out;
 }
 
-function readinessLineFromValue(nextStep) {
+function readinessSentence(nextStep) {
   const ru = isLanguageRu();
   const v = Number(nextStep);
   if (!Number.isFinite(v)) return ru ? 'Покупатель ещё формирует мнение.' : 'Buyer is still forming a view.';
@@ -1265,7 +1261,7 @@ function renderReactionStrip(transition) {
   if (!deltas.length && !stageAdvanced) return null;
 
   const ru = isLanguageRu();
-  const readiness = readinessLineFromValue(transition.state_after?.next_step_likelihood);
+  const readiness = readinessSentence(transition.state_after?.next_step_likelihood);
   const visible = deltas.slice(0, 3);
   const overflow = deltas.length - visible.length;
 
