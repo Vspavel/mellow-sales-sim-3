@@ -482,12 +482,6 @@ button:disabled { opacity: 0.45; cursor: default; }
 .buyer-state-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
 .buyer-state-metrics .meta-item { border: 1px solid var(--border); border-radius: 12px; background: var(--surface-subtle); padding: 12px 14px; }
 
-/* Turn-level coaching (inline in transcript) */
-.turn-coaching { align-self: flex-end; max-width: 85%; margin-top: 3px; padding: 7px 12px; border-radius: 10px; border: 1px solid var(--border); border-left: 3px solid var(--accent); background: var(--surface-subtle); font-size: 0.8rem; color: var(--muted); display: flex; flex-direction: column; gap: 3px; }
-.turn-coaching--critical { background: var(--fail-bg); color: var(--fail-text); border-color: var(--fail-text); border-left-color: var(--fail-text); }
-.turn-coaching-flag { font-weight: 700; font-size: 0.77rem; }
-.turn-coaching-flag--warn { color: var(--warn-text); }
-.turn-coaching p { margin: 0; line-height: 1.4; }
 .transcript-annotation { align-self: flex-end; max-width: 85%; margin-top: 3px; display: grid; gap: 8px; }
 .transcript-annotation--bot { align-self: flex-start; }
 .annotation-chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
