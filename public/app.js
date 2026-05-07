@@ -1473,7 +1473,8 @@ function renderSetupPersona() {
   const persona = selectedPersona();
   if (!persona) {
     selectedPersonaMeta.textContent = '';
-    setupCta.classList.add('hidden');
+    startConvBtn.disabled = true;
+    runDetailsBtn?.setAttribute('disabled', '');
     editPersonaBtn.classList.add('hidden');
     signalBrief.classList.add('hidden');
     if (selectedPersonaPrompt) selectedPersonaPrompt.textContent = '';
@@ -1968,7 +1969,8 @@ async function selectPersona(personaId) {
   transcript.innerHTML = '';
   assessment.innerHTML = '';
   signalBrief.classList.add('hidden');
-  setupCta.classList.add('hidden');
+  startConvBtn.disabled = true;
+  runDetailsBtn?.setAttribute('disabled', '');
   suggestionPanel.classList.add('hidden');
   if (suggestionMeta) suggestionMeta.textContent = '';
   resetBtn?.classList.add('hidden');
@@ -2002,14 +2004,16 @@ async function selectPersona(personaId) {
     });
     renderSignalCard();
     signalBrief.classList.remove('hidden');
-    setupCta.classList.remove('hidden');
+    startConvBtn.disabled = false;
+    runDetailsBtn?.removeAttribute('disabled');
     resetBtn?.classList.remove('hidden');
     updateRunState();
     syncRoute(true);
   } catch (error) {
     signalCard.innerHTML = `<p class="muted">${escapeHtml(error.message)}</p>`;
     signalBrief.classList.remove('hidden');
-    setupCta.classList.remove('hidden');
+    startConvBtn.disabled = false;
+    runDetailsBtn?.removeAttribute('disabled');
   }
 }
 
@@ -2549,7 +2553,8 @@ function resetToSetup() {
   copyShareLinkBtn?.classList.add('hidden');
   backToHistoryBtn?.classList.add('hidden');
   signalBrief.classList.add('hidden');
-  setupCta.classList.add('hidden');
+  startConvBtn.disabled = true;
+  runDetailsBtn?.setAttribute('disabled', '');
   suggestionPanel.classList.add('hidden');
   if (suggestionMeta) suggestionMeta.textContent = '';
   resetBtn?.classList.add('hidden');
