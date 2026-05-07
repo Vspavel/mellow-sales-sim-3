@@ -262,7 +262,11 @@ const LIVE_BUYER_METRIC_KEYS = [
 ];
 
 async function api(path, options = {}) {
-  const response = await fetch(path, {
+  // Normalize to absolute path so calls work under nested routes (e.g. /share/<id>)
+  // where a relative `api/...` would resolve against /share/ and fall through to
+  // the SPA catch-all, returning index.html instead of JSON.
+  const url = path.startsWith('/') ? path : `/${path}`;
+  const response = await fetch(url, {
     headers: { 'Content-Type': 'application/json' },
     ...options
   });
