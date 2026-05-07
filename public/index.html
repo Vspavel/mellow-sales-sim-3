@@ -298,131 +298,82 @@
         </section>
 
         <section class="phase-panel phase-panel--run hidden" id="runPanel">
-          <header class="panel-header panel-header--run">
-            <div class="run-meta">
-              <div class="run-meta-top">
-                <strong id="runStatus"></strong>
-                <span id="channelBadge" class="channel-badge channel-badge--messenger">Messenger</span>
-              </div>
-              <span class="muted run-focus" id="runFocus"></span>
-            </div>
+          <header class="panel-header panel-header--run run-header">
+            <p class="phase-label">Workspace</p>
+            <h1>Run</h1>
+            <p class="run-meta-strip muted">
+              <span id="runMetaPersona">Preparing</span>
+              <span class="run-meta-sep" aria-hidden="true">·</span>
+              <span id="channelBadge" class="channel-badge channel-badge--messenger">Messenger</span>
+              <span class="run-meta-sep" aria-hidden="true">·</span>
+              <span id="runStatus">Preparing</span>
+            </p>
           </header>
 
-          <div class="run-top-grid">
-            <section class="run-stage-card run-stage-card--compact run-stage-card--scenario">
-              <div class="run-insight-head">
-                <p class="phase-label">Scenario</p>
-                <span id="runScenarioMeta" class="muted run-insight-meta">Preparing scenario</span>
-              </div>
-              <div class="run-signal-state" id="runSignalState">
-                <div class="run-signal-pill-group">
-                  <span class="run-signal-pill-label">Selected signal</span>
-                  <span id="runRequestedSignal" class="run-signal-pill">Not set</span>
+          <div id="progressRail" class="run-stage-rail" role="list" aria-label="Acceptance stage progress"></div>
+          <p id="progressStageMeta" class="run-stage-hint muted">Waiting for first seller move</p>
+
+          <div class="run-thread-column">
+            <div id="transcript" class="run-thread" role="log" aria-live="polite" aria-label="Conversation thread"></div>
+
+            <div class="run-composer-slot" id="runComposerSlot">
+              <form id="messageForm" class="run-composer">
+                <label class="visually-hidden" for="messageInput">Your message</label>
+                <textarea id="messageInput" class="run-composer__textarea" rows="3" placeholder="Write your next move…"></textarea>
+                <div class="run-composer__row">
+                  <button type="button" id="suggestBtn" class="ghost-btn run-composer__hint" aria-label="Hint">
+                    <span class="run-composer__hint-glyph" aria-hidden="true">✦</span>
+                    <span class="run-composer__hint-label">Hint</span>
+                  </button>
+                  <button type="submit" id="sendBtn" class="launch-btn run-composer__send" aria-label="Send">Send</button>
                 </div>
-                <div class="run-signal-pill-group">
-                  <span class="run-signal-pill-label">Live signal</span>
-                  <span id="runActualSignal" class="run-signal-pill run-signal-pill--active">Waiting for session</span>
-                </div>
-              </div>
-              <p id="runSignalConfirmation" class="muted run-signal-confirmation"></p>
-            </section>
+                <p id="hintNote" class="run-composer__hint-note muted hidden"></p>
 
-            <section class="run-stage-card run-stage-card--progress">
-              <div class="run-insight-head">
-                <p class="phase-label">Deal progression</p>
-                <span id="progressStageMeta" class="muted run-insight-meta">Waiting for first seller move</span>
-              </div>
-              <div id="progressRail" class="progress-rail"></div>
-            </section>
-          </div>
-
-          <div class="cockpit-layout">
-            <section class="cockpit-main">
-              <section class="conversation-stage-card conversation-stage-card--messaging">
-                <div class="run-insight-head conversation-stage-head">
-                  <p class="phase-label">Live conversation</p>
-                </div>
-
-                <div class="conversation-thread-shell">
-                  <div id="transcript" class="transcript transcript--cockpit" aria-live="polite"></div>
-
-                  <div class="conversation-thread-footer">
-                    <div id="suggestionPanel" class="suggestion-panel hidden">
-                      <div class="suggestion-panel-head">
-                        <p class="suggestion-label">Recommended next move</p>
-                        <select id="hintLangSelect" class="hint-lang-select">
-                          <option value="ru" selected>Русский</option>
-                          <option value="en">English</option>
-                        </select>
-                      </div>
-                      <p id="suggestionMeta" class="suggestion-meta muted"></p>
-                      <p id="suggestionText" class="suggestion-text"></p>
-                      <button id="useSuggestionBtn">Use</button>
+                <details class="run-composer__advanced">
+                  <summary>Show controls</summary>
+                  <div class="run-composer__advanced-body">
+                    <label class="run-composer__field">
+                      <span class="run-composer__field-label">Hint language</span>
+                      <select id="hintLangSelect" class="hint-lang-select">
+                        <option value="ru" selected>Русский</option>
+                        <option value="en">English</option>
+                      </select>
+                    </label>
+                    <div class="composer-chip-group">
+                      <span class="composer-chip-label">Move type</span>
+                      <button type="button" class="composer-chip is-active" data-move-type="clarify">Clarify</button>
+                      <button type="button" class="composer-chip" data-move-type="prove">Prove</button>
+                      <button type="button" class="composer-chip" data-move-type="ask">Ask narrowly</button>
                     </div>
-
-                    <div class="composer-shell composer-shell--messaging">
-                      <p class="composer-focus" id="composerFocus"></p>
-                      <form id="messageForm" class="composer composer--messaging">
-                        <textarea id="messageInput" rows="3" placeholder="Write your first touch or next message"></textarea>
-                        <div class="composer-row composer-row--messaging">
-                          <div class="hint-controls">
-                            <button type="button" id="suggestBtn" class="ghost-btn">Recommended move</button>
-                          </div>
-                          <button type="submit">Send</button>
-                        </div>
-                      </form>
-
-                      <details class="composer-advanced-controls">
-                        <summary>Message controls</summary>
-                        <div class="composer-strategy-row composer-strategy-row--compact">
-                          <div class="composer-chip-group">
-                            <span class="composer-chip-label">Move type</span>
-                            <button type="button" class="composer-chip is-active" data-move-type="clarify">Clarify</button>
-                            <button type="button" class="composer-chip" data-move-type="prove">Prove</button>
-                            <button type="button" class="composer-chip" data-move-type="ask">Ask narrowly</button>
-                          </div>
-                          <div class="composer-chip-group">
-                            <span class="composer-chip-label">Proof layer</span>
-                            <button type="button" class="composer-chip" data-proof-layer="case">Case snippet</button>
-                            <button type="button" class="composer-chip is-active" data-proof-layer="one_screen">One-screen proof</button>
-                            <button type="button" class="composer-chip" data-proof-layer="calculator">Calculator snapshot</button>
-                          </div>
-                        </div>
-                      </details>
+                    <div class="composer-chip-group">
+                      <span class="composer-chip-label">Proof layer</span>
+                      <button type="button" class="composer-chip" data-proof-layer="case">Case snippet</button>
+                      <button type="button" class="composer-chip is-active" data-proof-layer="one_screen">One-screen proof</button>
+                      <button type="button" class="composer-chip" data-proof-layer="calculator">Calculator snapshot</button>
                     </div>
+                    <p id="composerFocus" class="muted run-composer__framing"></p>
                   </div>
-                </div>
-              </section>
-            </section>
+                </details>
+              </form>
 
-            <aside class="cockpit-sidebar cockpit-sidebar--context">
-              <section class="run-insight-card run-insight-card--primary" id="nextMoveCard">
-                <div class="run-insight-head">
-                  <p class="phase-label">Next move</p>
-                </div>
-                <div id="nextMovePanel"></div>
-              </section>
+              <div id="runEndCard" class="run-end hidden" role="region" aria-label="Run summary"></div>
+            </div>
 
-              <section class="run-insight-card run-insight-card--compact" id="buyerBriefCard">
-                <div class="run-insight-head">
-                  <p class="phase-label">Buyer brief</p>
-                </div>
-                <div id="buyerBriefPanel"></div>
-              </section>
-
-              <section class="run-insight-card run-insight-card--compact">
-                <div class="run-insight-head">
-                  <p class="phase-label">Buyer readiness</p>
-                  <span id="buyerStateTurnMeta" class="muted run-insight-meta">Baseline before first seller turn</span>
-                </div>
-                <div id="buyerStateLivePanel"></div>
-              </section>
-            </aside>
+            <div class="run-footer run-footer--centered">
+              <button id="finishBtn" class="secondary-btn" type="button" disabled>End run</button>
+              <button id="runReplayBackBtn" class="ghost-btn hidden" type="button">Back to history</button>
+            </div>
           </div>
 
-          <div class="run-footer">
-            <button id="finishBtn" class="secondary-btn" disabled>Close</button>
-          </div>
+          <dialog id="endRunConfirmDialog" class="end-run-dialog">
+            <form method="dialog" class="end-run-dialog__form">
+              <p id="endRunConfirmText" class="end-run-dialog__text">End this run? You'll see your coaching summary.</p>
+              <div class="end-run-dialog__actions">
+                <button type="submit" value="cancel" class="ghost-btn" id="endRunCancelBtn">Cancel</button>
+                <button type="submit" value="confirm" class="secondary-btn" id="endRunConfirmBtn">End run</button>
+              </div>
+            </form>
+          </dialog>
         </section>
 
         <section class="phase-panel hidden" id="analyticsPanel">

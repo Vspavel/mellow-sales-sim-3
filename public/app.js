@@ -29,6 +29,8 @@ const state = {
   proofLayer: 'one_screen',
   // Randomizer & random-factor settings (persisted to localStorage)
   phase: 'setup',
+  replayMode: false,
+  fromHistory: false,
   randomizerConfig: {
     variability: 'medium',       // 'off' | 'low' | 'medium' | 'high'
     signal_types: [],            // [] = all types allowed
@@ -153,6 +155,16 @@ const progressStageMeta = document.getElementById('progressStageMeta');
 const composerFocus = document.getElementById('composerFocus');
 const moveTypeButtons = () => [...document.querySelectorAll('[data-move-type]')];
 const proofLayerButtons = () => [...document.querySelectorAll('[data-proof-layer]')];
+const runMetaPersona = document.getElementById('runMetaPersona');
+const messageForm_el = document.getElementById('messageForm');
+const runComposerSlot = document.getElementById('runComposerSlot');
+const runEndCard = document.getElementById('runEndCard');
+const hintNote = document.getElementById('hintNote');
+const sendBtn = document.getElementById('sendBtn');
+const endRunConfirmDialog = document.getElementById('endRunConfirmDialog');
+const endRunConfirmBtn = document.getElementById('endRunConfirmBtn');
+const endRunCancelBtn = document.getElementById('endRunCancelBtn');
+const runReplayBackBtn = document.getElementById('runReplayBackBtn');
 
 let analyticsData = null;
 
@@ -1073,8 +1085,11 @@ function renderProgressRail() {
     ['meeting_booked', 'Meeting booked'],
   ];
   progressRail.innerHTML = stages.map(([id, label]) => {
-    const stateClass = currentStage === id ? 'is-current' : history.has(id) ? 'is-done' : '';
-    return `<div class="progress-step ${stateClass}"><span class="progress-step-dot"></span><span class="progress-step-label">${escapeHtml(label)}</span></div>`;
+    const isCurrent = currentStage === id;
+    const isDone = !isCurrent && history.has(id);
+    const stateClass = isCurrent ? 'is-current' : isDone ? 'is-done' : '';
+    const aria = isCurrent ? ' aria-current="step"' : '';
+    return `<div class="progress-step ${stateClass}" role="listitem"${aria}><span class="progress-step-dot"></span><span class="progress-step-label">${escapeHtml(label)}</span></div>`;
   }).join('');
   if (progressStageMeta) progressStageMeta.textContent = currentDesiredStep();
 }
@@ -1085,6 +1100,379 @@ function renderRunOverview() {
   renderBuyerStateLivePanel();
   renderNextMovePanel();
   renderProgressRail();
+}
+
+function isLanguageRu() {
+  const lang = (hintLangSelect && hintLangSelect.value) || state.session?.language || 'ru';
+  return lang === 'ru';
+}
+
+function buildSystemSignalCopy(card, persona) {
+  const ru = isLanguageRu();
+  const headline = (() => {
+    const raw = card?.rendered_text || card?.what_happened || '';
+    if (!raw) return '';
+    const dot = raw.indexOf('.');
+    const trimmed = dot > 0 && dot < 100 ? raw.slice(0, dot + 1) : raw.slice(0, 80);
+    return trimmed.trim();
+  })();
+  const signalLabel = card ? signalTypeOptionLabel(card.signal_type) : '';
+  const heat = card?.heat ? heatLabel(card.heat) : '';
+  const heatChip = heat ? (ru ? `Heat: ${heat}` : `Heat: ${heat}`) : '';
+  const window = card?.outreach_window || '';
+  const windowChip = window ? (ru ? `Окно: ${window}` : `Window: ${window}`) : '';
+  const personaName = card?.contact?.name || persona?.name || '';
+  const personaRole = card?.contact?.title || persona?.role || '';
+  const personaEssence = persona ? roleEssence(persona) : '';
+  const companyLine = card?.company?.name
+    ? `${card.company.name}${card.company.hq ? ` · ${card.company.hq}` : ''}`
+    : '';
+  return {
+    eyebrow: ru ? 'Система · Бриф сигнала' : 'System · Signal briefing',
+    headline,
+    chips: [signalLabel, heatChip, windowChip].filter(Boolean),
+    personaTitle: [personaName, personaRole].filter(Boolean).join(' · '),
+    personaEssence,
+    companyLine,
+    openerLabel: ru ? 'Как начать' : 'Suggested opener',
+    opener: card?.first_touch_hint || buildFirstTouchFallback(card, persona, ru),
+    useDraftLabel: ru ? 'В черновик' : 'Use as draft',
+    skeletonLabel: ru ? 'Готовим бриф сигнала…' : 'Preparing signal briefing…',
+  };
+}
+
+function buildFirstTouchFallback(card, persona, ru) {
+  const pain = String(card?.probable_pain || card?.what_happened || '').slice(0, 80);
+  if (!pain) {
+    return ru
+      ? 'Стартуйте с одного конкретного сигнала и одного уточняющего вопроса.'
+      : 'Start with one specific signal and one narrow clarifying question.';
+  }
+  const family = persona?.archetype || persona?.doctrine_family || 'default';
+  if (family === 'finance') {
+    return ru
+      ? `Откройтесь конкретной операционной болью: ${pain}. Не предлагайте продукт сразу — спросите, как они сейчас её закрывают.`
+      : `Open with a specific operational pain: ${pain}. Don't pitch — ask how they currently handle it.`;
+  }
+  if (family === 'legal') {
+    return ru
+      ? `Сошлитесь на текущий compliance-сигнал: ${pain}. Цель — быстрая 15-минутная проверка процесса, а не презентация.`
+      : `Reference the live compliance signal: ${pain}. Aim for a 15-minute process check, not a pitch.`;
+  }
+  return ru
+    ? `Стартуйте с конкретного сигнала: ${pain}. Один уточняющий вопрос, не три.`
+    : `Start with a concrete signal: ${pain}. One clarifying question, not three.`;
+}
+
+function renderSystemSignalBubble() {
+  const card = state.session?.sde_card;
+  const persona = selectedPersona();
+  const wrap = document.createElement('section');
+  wrap.className = 'bubble bubble--system';
+  wrap.setAttribute('role', 'region');
+  wrap.setAttribute('aria-label', isLanguageRu() ? 'Бриф сигнала' : 'Signal briefing');
+
+  if (!card) {
+    const ru = isLanguageRu();
+    wrap.innerHTML = `
+      <p class="bubble--system__eyebrow">${escapeHtml(ru ? 'Система · Бриф сигнала' : 'System · Signal briefing')}</p>
+      <div class="bubble--system__skeleton" aria-hidden="true">
+        <span class="bubble--system__skeleton-line"></span>
+        <span class="bubble--system__skeleton-line"></span>
+        <span class="bubble--system__skeleton-line bubble--system__skeleton-line--short"></span>
+      </div>
+    `;
+    return wrap;
+  }
+
+  const copy = buildSystemSignalCopy(card, persona);
+  wrap.innerHTML = `
+    <p class="bubble--system__eyebrow">${escapeHtml(copy.eyebrow)}</p>
+    <h2 class="bubble--system__headline">${escapeHtml(copy.headline)}</h2>
+    ${copy.chips.length ? `<div class="bubble--system__chips">${copy.chips.map((c) => `<span class="run-signal-pill">${escapeHtml(c)}</span>`).join('')}</div>` : ''}
+    ${copy.personaTitle ? `<p class="bubble--system__persona-title">${escapeHtml(copy.personaTitle)}</p>` : ''}
+    ${copy.personaEssence ? `<p class="bubble--system__persona-essence muted">${escapeHtml(copy.personaEssence)}</p>` : ''}
+    ${copy.companyLine ? `<p class="bubble--system__persona-essence muted">${escapeHtml(copy.companyLine)}</p>` : ''}
+    ${copy.opener ? `
+      <div class="bubble--system__opener">
+        <p class="bubble--system__opener-label">${escapeHtml(copy.openerLabel)}</p>
+        <p class="bubble--system__opener-text">${escapeHtml(copy.opener)}</p>
+        <button type="button" class="ghost-btn bubble--system__use-draft" data-action="use-as-draft" data-draft="${escapeHtml(copy.opener)}">${escapeHtml(copy.useDraftLabel)}</button>
+      </div>
+    ` : ''}
+  `;
+  return wrap;
+}
+
+const REACTION_DELTA_MIN_FRACTION = 0.05;
+const REACTION_DELTA_MIN_INTEGER = 1;
+const REACTION_METRIC_LABELS = [
+  ['next_step_likelihood', 'Next step', 'fraction'],
+  ['reply_likelihood', 'Reply', 'fraction'],
+  ['disengagement_risk', 'Risk', 'fraction'],
+  ['trust', 'Trust', 'integer'],
+  ['clarity', 'Clarity', 'integer'],
+  ['interest', 'Interest', 'integer'],
+  ['perceived_value', 'Value', 'integer'],
+  ['patience', 'Patience', 'integer'],
+];
+
+function buildReactionDeltas(transition) {
+  if (!transition) return [];
+  const out = [];
+  for (const [key, label, kind] of REACTION_METRIC_LABELS) {
+    const fromDerived = transition.derived_metrics_delta?.[key];
+    const fromPredicted = transition.predicted_delta?.[key];
+    let raw = Number.isFinite(Number(fromDerived)) ? Number(fromDerived) : Number(fromPredicted);
+    if (!Number.isFinite(raw)) {
+      const before = Number(transition.state_before?.[key]);
+      const after = Number(transition.state_after?.[key]);
+      if (Number.isFinite(before) && Number.isFinite(after)) raw = after - before;
+    }
+    if (!Number.isFinite(raw) || raw === 0) continue;
+    const threshold = kind === 'fraction' ? REACTION_DELTA_MIN_FRACTION : REACTION_DELTA_MIN_INTEGER;
+    if (Math.abs(raw) < threshold) continue;
+    out.push({ key, label, kind, value: raw });
+  }
+  out.sort((a, b) => Math.abs(b.value) - Math.abs(a.value));
+  return out;
+}
+
+function readinessLineFromValue(nextStep) {
+  const ru = isLanguageRu();
+  const v = Number(nextStep);
+  if (!Number.isFinite(v)) return ru ? 'Покупатель ещё формирует мнение.' : 'Buyer is still forming a view.';
+  if (v >= 0.66) return ru ? 'Готов к ограниченному следующему шагу.' : 'Ready for a bounded next step.';
+  if (v >= 0.4) return ru ? 'Интерес формируется, нужны доказательства.' : 'Interest is forming, still needs proof.';
+  return ru ? 'Рано — сужайте проблему и уточняйте.' : 'Still early, keep narrowing and clarifying.';
+}
+
+function formatReactionDelta(delta) {
+  if (delta.kind === 'fraction') {
+    const pp = Math.round(delta.value * 100);
+    return pp > 0 ? `+${pp}pp` : `${pp}pp`;
+  }
+  const intVal = Math.round(delta.value);
+  return intVal > 0 ? `+${intVal}` : `${intVal}`;
+}
+
+function renderReactionStrip(transition) {
+  if (!transition) return null;
+  const deltas = buildReactionDeltas(transition);
+  const stageBefore = transition.acceptance_stage_before || transition.state_before?.acceptance_stage;
+  const stageAfter = transition.acceptance_stage_after || transition.state_after?.acceptance_stage;
+  const stageAdvanced = stageAfter && stageBefore && stageAfter !== stageBefore;
+  if (!deltas.length && !stageAdvanced) return null;
+
+  const ru = isLanguageRu();
+  const readiness = readinessLineFromValue(transition.state_after?.next_step_likelihood);
+  const visible = deltas.slice(0, 3);
+  const overflow = deltas.length - visible.length;
+
+  const wrap = document.createElement('div');
+  wrap.className = 'bubble-reaction';
+  wrap.setAttribute('role', 'status');
+  wrap.setAttribute('aria-live', 'polite');
+
+  const stagePill = stageAdvanced
+    ? `<span class="bubble-reaction__stage-pill">${escapeHtml((ru ? 'Перешли к ' : 'Advanced to ') + (acceptanceStageLabel(stageAfter) || String(stageAfter).replace(/_/g, ' ')))}</span>`
+    : '';
+
+  const deltasHtml = visible.map((d) => {
+    const text = formatReactionDelta(d);
+    const arrow = d.value > 0 ? '▲' : '▼';
+    const tone = d.value > 0 ? 'is-up' : 'is-down';
+    return `<span class="bubble-reaction__delta ${tone}"><span class="bubble-reaction__delta-label">${escapeHtml(d.label)}</span><span class="bubble-reaction__delta-value">${escapeHtml(arrow)} ${escapeHtml(text)}</span></span>`;
+  }).join('');
+
+  const overflowHtml = overflow > 0
+    ? `<button type="button" class="bubble-reaction__overflow" aria-expanded="false" data-overflow>${ru ? `+${overflow} ещё` : `+${overflow} more`}</button>`
+    : '';
+
+  const overflowList = overflow > 0
+    ? `<ul class="bubble-reaction__overflow-list hidden">${deltas.slice(3, 6).map((d) => {
+        const text = formatReactionDelta(d);
+        const arrow = d.value > 0 ? '▲' : '▼';
+        return `<li>${escapeHtml(d.label)} ${escapeHtml(arrow)} ${escapeHtml(text)}</li>`;
+      }).join('')}</ul>`
+    : '';
+
+  wrap.innerHTML = `
+    <p class="bubble-reaction__readiness">${escapeHtml(readiness)}</p>
+    <div class="bubble-reaction__row">
+      <div class="bubble-reaction__deltas">${deltasHtml}${overflowHtml}</div>
+      ${stagePill}
+    </div>
+    ${overflowList}
+  `;
+
+  if (overflow > 0) {
+    const btn = wrap.querySelector('[data-overflow]');
+    const list = wrap.querySelector('.bubble-reaction__overflow-list');
+    btn.addEventListener('click', () => {
+      const isOpen = !list.classList.contains('hidden');
+      list.classList.toggle('hidden', isOpen);
+      btn.setAttribute('aria-expanded', String(!isOpen));
+    });
+  }
+
+  return wrap;
+}
+
+function isRunFinishedSession() {
+  const status = state.session?.status;
+  if (status === 'finished') return true;
+  const stage = state.session?.dialogue_summary?.acceptance_stage;
+  return stage === 'meeting_booked';
+}
+
+function endRunVerdict() {
+  const session = state.session;
+  if (!session) return { kind: 'fail' };
+  const stage = session?.dialogue_summary?.acceptance_stage;
+  const lastBuyer = (session.transcript || []).filter((m) => m.role === 'bot' || m.role === 'buyer').slice(-1)[0];
+  const detected = lastBuyer?.text && detectBuyerMeetingAcceptance(lastBuyer.text, session.language || 'ru');
+  return { kind: stage === 'meeting_booked' || detected ? 'success' : 'fail' };
+}
+
+function renderEndCard({ fromHistory = false } = {}) {
+  if (!runEndCard) return;
+  const a = state.session?.assessment;
+  if (!a) {
+    runEndCard.classList.add('hidden');
+    runEndCard.innerHTML = '';
+    return;
+  }
+  const ru = isLanguageRu();
+  const verdict = endRunVerdict();
+  const success = verdict.kind === 'success';
+  const verdictLine = success
+    ? (ru ? 'Встреча назначена' : 'Meeting booked')
+    : (ru ? 'Диалог закрыт без встречи' : 'Run closed without a meeting');
+  const verdictDotClass = success ? 'run-end__dot run-end__dot--success' : 'run-end__dot run-end__dot--muted';
+
+  const summary = a.summary_for_seller
+    || (success
+      ? (ru ? 'Покупатель подтвердил следующий шаг.' : 'The buyer confirmed the next step.')
+      : (ru ? 'Покупатель не подтвердил встречу — посмотрим, что можно улучшить.' : 'The buyer did not commit — here is what to refine.'));
+
+  const strengths = (a.criteria || []).filter((c) => c.status === 'PASS' || c.status === 'PASS_WITH_NOTES').slice(0, 3);
+  const weaknesses = (a.criteria || []).filter((c) => c.status === 'FAIL' || c.status === 'BLOCKER').slice(0, 3);
+  const improvements = (() => {
+    if (Array.isArray(a.improvements) && a.improvements.length) {
+      return a.improvements.slice(0, 3).map((item) => ({
+        title: item.label || item.title || (ru ? 'Что улучшить' : 'What to try'),
+        reason: item.reason || item.short_reason || ''
+      }));
+    }
+    if (weaknesses.length) {
+      return weaknesses.slice(0, 3).map((c) => ({
+        title: c.label || c.name || c.id,
+        reason: ru
+          ? `Потренируйте этот момент в следующем диалоге: ${c.short_reason || ''}`.trim()
+          : `Rehearse this in the next run: ${c.short_reason || ''}`.trim(),
+      }));
+    }
+    return [{
+      title: ru ? 'Держите дисциплину' : 'Keep the discipline',
+      reason: ru
+        ? 'Ведите один сигнал → один шаг. Не расширяйте контекст до подтверждённой готовности.'
+        : 'One signal, one step. Do not widen scope before readiness is earned.',
+    }];
+  })();
+
+  const renderItem = (item) => `
+    <li class="run-end__item">
+      <strong>${escapeHtml(item.title)}</strong>
+      ${item.reason ? `<p>${escapeHtml(item.reason)}</p>` : ''}
+      ${item.evidence ? `<p class="muted">${escapeHtml(ru ? 'Из диалога: ' : 'Evidence: ')}${escapeHtml(item.evidence)}</p>` : ''}
+    </li>
+  `;
+
+  const goodItems = strengths.map((c) => ({ title: c.label || c.name || c.id, reason: c.short_reason || '', evidence: c.evidence_quote || '' }));
+  const offItems = weaknesses.map((c) => ({ title: c.label || c.name || c.id, reason: c.short_reason || '', evidence: c.evidence_quote || '' }));
+
+  const labels = ru
+    ? { good: 'Что получилось', off: 'Что сбоило', next: 'Что улучшить', startAnother: 'Запустить ещё', download: 'Скачать', share: 'Скопировать ссылку', back: 'Назад в историю' }
+    : { good: 'What was good', off: 'What was off', next: 'What to try next time', startAnother: 'Start another', download: 'Download', share: 'Share link', back: 'Back to history' };
+
+  runEndCard.innerHTML = `
+    <p class="run-end__verdict"><span class="${verdictDotClass}" aria-hidden="true"></span>${escapeHtml(verdictLine)}</p>
+    <p class="run-end__summary muted">${escapeHtml(summary)}</p>
+    ${goodItems.length ? `<section class="run-end__block"><p class="run-end__label">${escapeHtml(labels.good)}</p><ul class="run-end__list">${goodItems.map(renderItem).join('')}</ul></section>` : ''}
+    ${offItems.length ? `<section class="run-end__block"><p class="run-end__label">${escapeHtml(labels.off)}</p><ul class="run-end__list">${offItems.map(renderItem).join('')}</ul></section>` : ''}
+    <section class="run-end__block"><p class="run-end__label">${escapeHtml(labels.next)}</p><ul class="run-end__list">${improvements.map(renderItem).join('')}</ul></section>
+    <div class="run-end__actions">
+      <button type="button" class="launch-btn" data-end-action="start-another">${escapeHtml(labels.startAnother)}</button>
+      <button type="button" class="ghost-btn" data-end-action="download">${escapeHtml(labels.download)}</button>
+      <button type="button" class="ghost-btn" data-end-action="share">${escapeHtml(labels.share)}</button>
+      ${fromHistory ? `<button type="button" class="ghost-btn" data-end-action="back-to-history">${escapeHtml(labels.back)}</button>` : ''}
+    </div>
+  `;
+  runEndCard.classList.remove('hidden');
+  wireEndCardActions();
+}
+
+function wireEndCardActions() {
+  if (!runEndCard) return;
+  runEndCard.querySelectorAll('[data-end-action]').forEach((btn) => {
+    const action = btn.dataset.endAction;
+    btn.addEventListener('click', () => {
+      if (action === 'start-another') {
+        resetToSetup();
+      } else if (action === 'download' && state.session?.session_id) {
+        const a = document.createElement('a');
+        a.href = `api/sessions/${state.session.session_id}/download`;
+        a.download = '';
+        a.click();
+      } else if (action === 'share' && state.session?.session_id) {
+        const url = `${location.origin}/share/${state.session.session_id}`;
+        navigator.clipboard?.writeText(url).then(() => {
+          const orig = btn.textContent;
+          btn.textContent = isLanguageRu() ? 'Скопировано' : 'Copied!';
+          setTimeout(() => { btn.textContent = orig; }, 2000);
+        }).catch(() => prompt(isLanguageRu() ? 'Ссылка:' : 'Share link:', url));
+      } else if (action === 'back-to-history') {
+        showPhase('history');
+      }
+    });
+  });
+}
+
+function setComposerVisibility() {
+  if (!runComposerSlot || !messageForm_el || !runEndCard) return;
+  const finished = isRunFinishedSession();
+  const replay = !!state.replayMode;
+  if (finished || replay) {
+    messageForm_el.classList.add('hidden');
+  } else {
+    messageForm_el.classList.remove('hidden');
+  }
+  if (suggestBtn) suggestBtn.disabled = !state.session || replay || finished;
+  if (sendBtn) sendBtn.disabled = !state.session || replay || finished || !messageInput?.value?.trim();
+  if (finishBtn) {
+    if (replay) {
+      finishBtn.classList.add('hidden');
+    } else {
+      finishBtn.classList.remove('hidden');
+    }
+    finishBtn.disabled = sellerMessages().length === 0 || finished;
+  }
+  if (runReplayBackBtn) {
+    runReplayBackBtn.classList.toggle('hidden', !(replay && state.fromHistory));
+  }
+  if (finished && state.session?.assessment) {
+    renderEndCard({ fromHistory: state.fromHistory || replay });
+  } else {
+    runEndCard.classList.add('hidden');
+    runEndCard.innerHTML = '';
+  }
+}
+
+function clearHintNoteSilently() {
+  if (!hintNote) return;
+  hintNote.classList.add('hidden');
+  hintNote.innerHTML = '';
 }
 
 function formatHintMemoryMeta(memoryContext) {
@@ -1548,51 +1936,57 @@ function renderSignalCard() {
   `;
 }
 
+function formatBubbleTime(message) {
+  const ts = message?.created_at || message?.timestamp;
+  if (!ts) return '';
+  const d = new Date(ts);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+}
+
+function buyerInitials(persona) {
+  const name = state.session?.sde_card?.contact?.name || persona?.name || '';
+  if (!name) return '·';
+  return name.split(/\s+/).map((p) => p[0]).filter(Boolean).slice(0, 2).join('').toUpperCase() || '·';
+}
+
 function bubble(message) {
   const frag = document.createDocumentFragment();
-  const el = document.createElement('div');
   if (message.role === 'system') {
+    const el = document.createElement('div');
     el.className = 'bubble system-note';
     el.textContent = message.text;
     frag.appendChild(el);
     return frag;
   }
-  el.className = `bubble ${message.role}`;
-  el.textContent = message.text;
-  frag.appendChild(el);
+  const isSeller = message.role === 'seller';
+  const wrap = document.createElement('div');
+  wrap.className = `bubble-row ${isSeller ? 'bubble-row--seller' : 'bubble-row--buyer'}`;
 
-  const transcriptAnnotation = buildTranscriptAnnotation(message);
-  if (transcriptAnnotation) frag.appendChild(transcriptAnnotation);
-
-  if (message.role === 'seller' && message.buyer_state_transition) {
-    const t = message.buyer_state_transition;
-    const notes = t.coaching_notes || [];
-    const flags = t.risk_flags || [];
-    const isCritical = flags.includes('overclaim_scope');
-    const isNearDisengage = flags.includes('near_disengagement');
-    if (notes.length || isCritical || isNearDisengage) {
-      const coaching = document.createElement('div');
-      coaching.className = 'turn-coaching' + (isCritical ? ' turn-coaching--critical' : '');
-      if (isCritical) {
-        const s = document.createElement('span');
-        s.className = 'turn-coaching-flag';
-        s.textContent = 'Overclaim — trust dropped sharply';
-        coaching.appendChild(s);
-      } else if (isNearDisengage) {
-        const s = document.createElement('span');
-        s.className = 'turn-coaching-flag turn-coaching-flag--warn';
-        s.textContent = 'Buyer near disengagement';
-        coaching.appendChild(s);
-      }
-      notes.forEach((note) => {
-        const p = document.createElement('p');
-        p.textContent = note;
-        coaching.appendChild(p);
-      });
-      frag.appendChild(coaching);
-    }
+  if (!isSeller) {
+    const persona = selectedPersona();
+    const avatar = document.createElement('span');
+    avatar.className = 'bubble__avatar';
+    avatar.setAttribute('aria-hidden', 'true');
+    avatar.textContent = buyerInitials(persona);
+    wrap.appendChild(avatar);
   }
 
+  const el = document.createElement('div');
+  el.className = `bubble ${isSeller ? 'bubble--seller' : 'bubble--buyer'}`;
+  const body = document.createElement('p');
+  body.className = 'bubble__body';
+  body.textContent = message.text || '';
+  el.appendChild(body);
+  const time = formatBubbleTime(message);
+  if (time) {
+    const t = document.createElement('span');
+    t.className = 'bubble__time muted';
+    t.textContent = time;
+    el.appendChild(t);
+  }
+  wrap.appendChild(el);
+  frag.appendChild(wrap);
   return frag;
 }
 
@@ -1689,33 +2083,24 @@ function buildTranscriptAnnotation(message) {
   return wrap;
 }
 
+function runStatusCopy(count) {
+  const ru = isLanguageRu();
+  if (!state.session) return ru ? 'Подготовка' : 'Preparing';
+  if (isRunFinishedSession()) {
+    return endRunVerdict().kind === 'success'
+      ? (ru ? 'Встреча назначена' : 'Meeting booked')
+      : (ru ? 'Диалог закрыт' : 'Run closed');
+  }
+  if (count === 0) return ru ? 'Ждёт первого сообщения' : 'Waiting for first move';
+  if (count === 1) return ru ? 'Первое касание отправлено' : 'First touch sent';
+  return ru ? `Идёт диалог · ${count} сообщений` : `Active · ${count} messages`;
+}
+
 function updateRunState() {
   const count = sellerMessages().length;
-  finishBtn.disabled = count === 0;
   const persona = selectedPersona();
-  const isEmail = state.session?.dialogue_type === 'email';
 
-  runStatus.textContent = !state.session
-    ? 'Prepare your signal'
-    : count === 0
-    ? 'Ready, send your first message'
-    : count === 1
-    ? 'First touch sent'
-    : `Conversation active · ${count} messages`;
-
-  if (isEmail) {
-    runFocus.textContent = count === 0
-      ? 'Email mode: include greeting, substantive body, and sign-off in every message.'
-      : 'Email: formal greeting · structured body · sign-off. Keep it under 150 words.';
-  } else {
-    runFocus.textContent = !state.session || count === 0
-      ? 'Open through a specific signal, not a generic pitch.'
-      : persona?.archetype === 'finance'
-      ? 'Language of control, responsibility boundaries, and explainability.'
-      : persona?.archetype === 'legal'
-      ? 'Documents, traceability, process safeguards, no overclaiming.'
-      : 'Keep it short, specific, operational-first.';
-  }
+  if (runStatus) runStatus.textContent = runStatusCopy(count);
 
   if (channelBadge) {
     const type = state.session?.dialogue_type || 'messenger';
@@ -1723,56 +2108,57 @@ function updateRunState() {
     channelBadge.className = `channel-badge channel-badge--${type}`;
   }
 
-  if (runScenarioMeta) {
-    runScenarioMeta.textContent = persona
-      ? `${selectedScenarioSummary(persona)} · ${persona.name}`
-      : 'Choose a scenario to open the cockpit.';
-  }
-
-  const requestedSignalId = state.selectedSignalType || state.session?.scenario_selection?.signal_type || '';
-  const activeSignalId = state.session?.sde_card?.signal_type || '';
-  const normalizedRequestedSignal = normalizeSignalTypeId(requestedSignalId);
-  const normalizedActiveSignal = normalizeSignalTypeId(activeSignalId);
-  const requestedSignalLabel = requestedSignalId ? signalTypeOptionLabel(requestedSignalId) : 'Not set';
-  const activeSignalLabel = activeSignalId ? signalTypeOptionLabel(activeSignalId) : 'Waiting for session';
-
-  if (runRequestedSignal) {
-    runRequestedSignal.textContent = requestedSignalLabel;
-    runRequestedSignal.className = 'run-signal-pill';
-  }
-  if (runActualSignal) {
-    runActualSignal.textContent = activeSignalLabel;
-    runActualSignal.className = 'run-signal-pill run-signal-pill--active';
-    if (activeSignalId && requestedSignalId) {
-      runActualSignal.classList.add(normalizedRequestedSignal === normalizedActiveSignal ? 'run-signal-pill--match' : 'run-signal-pill--mismatch');
-    }
-  }
-  if (runSignalConfirmation) {
-    runSignalConfirmation.textContent = !requestedSignalId
-      ? 'Choose a signal type to lock the trigger for this run.'
-      : !activeSignalId
-      ? `Requested trigger: ${requestedSignalLabel}. Start the session to confirm the active signal.`
-      : normalizedRequestedSignal === normalizedActiveSignal
-      ? `Signal confirmed. This run is operating on ${activeSignalLabel}.`
-      : `Signal mismatch. Requested ${requestedSignalLabel}, but the active session is using ${activeSignalLabel}.`;
+  if (runMetaPersona) {
+    const name = state.session?.sde_card?.contact?.name || persona?.name || (isLanguageRu() ? 'Покупатель' : 'Buyer');
+    const role = state.session?.sde_card?.contact?.title || persona?.role || '';
+    runMetaPersona.textContent = role ? `${name} · ${role}` : name;
   }
 
   if (composerFocus) {
     const move = { clarify: 'Clarify', prove: 'Prove', ask: 'Ask narrowly' }[state.moveType] || 'Clarify';
     const proof = { case: 'case snippet', one_screen: 'one-screen proof', calculator: 'calculator snapshot' }[state.proofLayer] || 'one-screen proof';
-    composerFocus.textContent = `${runFocus.textContent} Current framing: ${move} via ${proof}.`;
+    composerFocus.textContent = isLanguageRu()
+      ? `Текущий фрейм: ${move} через ${proof}.`
+      : `Currently framing: ${move} via ${proof}.`;
   }
 
+  setComposerVisibility();
   renderRunOverview();
 }
 
 function renderTranscript() {
+  if (!transcript) return;
   transcript.innerHTML = '';
-  const leadSystemMessage = signalSystemMessage();
-  if (leadSystemMessage) transcript.appendChild(bubble(leadSystemMessage));
-  (state.session?.transcript || []).forEach((m) => transcript.appendChild(bubble(m)));
+  transcript.appendChild(renderSystemSignalBubble());
+  wireSystemBubbleActions();
+  const messages = state.session?.transcript || [];
+  messages.forEach((m, i) => {
+    transcript.appendChild(bubble(m));
+    if (m.role === 'bot' || m.role === 'buyer') {
+      const prev = messages[i - 1];
+      if (prev && prev.role === 'seller' && prev.buyer_state_transition) {
+        const strip = renderReactionStrip(prev.buyer_state_transition);
+        if (strip) transcript.appendChild(strip);
+      }
+    }
+  });
   transcript.scrollTop = transcript.scrollHeight;
   updateRunState();
+}
+
+function wireSystemBubbleActions() {
+  if (!transcript) return;
+  const useDraftBtn = transcript.querySelector('[data-action="use-as-draft"]');
+  if (!useDraftBtn) return;
+  useDraftBtn.addEventListener('click', () => {
+    if (!messageInput) return;
+    const draft = useDraftBtn.dataset.draft || '';
+    messageInput.value = draft;
+    messageInput.focus();
+    try {
+      messageInput.setSelectionRange(messageInput.value.length, messageInput.value.length);
+    } catch {}
+  });
 }
 
 function renderAssessment(fromHistory = false) {
@@ -1966,12 +2352,16 @@ async function selectPersona(personaId) {
   state.session = null;
   state.lastHint = null;
   state.appliedHintId = null;
+  state.replayMode = false;
+  state.fromHistory = false;
   transcript.innerHTML = '';
   assessment.innerHTML = '';
+  if (runEndCard) { runEndCard.innerHTML = ''; runEndCard.classList.add('hidden'); }
+  clearHintNoteSilently();
   signalBrief.classList.add('hidden');
   startConvBtn.disabled = true;
   runDetailsBtn?.setAttribute('disabled', '');
-  suggestionPanel.classList.add('hidden');
+  suggestionPanel?.classList.add('hidden');
   if (suggestionMeta) suggestionMeta.textContent = '';
   resetBtn?.classList.add('hidden');
   renderPersonaDropdown();
@@ -2484,10 +2874,11 @@ backToSetupBtn?.addEventListener('click', () => {
 
 messageForm.addEventListener('submit', async (event) => {
   event.preventDefault();
-  if (!state.session) return;
+  if (!state.session || state.replayMode) return;
   const text = messageInput.value.trim();
   if (!text) return;
   messageInput.value = '';
+  clearHintNoteSilently();
   const result = await api(`api/sessions/${state.session.session_id}/message`, {
     method: 'POST',
     body: JSON.stringify({ text, hintId: state.appliedHintId })
@@ -2495,20 +2886,60 @@ messageForm.addEventListener('submit', async (event) => {
   state.appliedHintId = null;
   state.session = result.session;
   renderTranscript();
+  if (isRunFinishedSession() && state.session.assessment) {
+    renderEndCard({ fromHistory: false });
+  }
   syncRoute(true);
+});
+
+messageInput?.addEventListener('input', () => {
+  clearHintNoteSilently();
+  if (sendBtn) sendBtn.disabled = !messageInput.value.trim();
 });
 
 finishBtn.addEventListener('click', async () => {
   if (!state.session || sellerMessages().length === 0) return;
-  state.session = await api(`api/sessions/${state.session.session_id}/finish`, { method: 'POST' });
-  renderTranscript();
-  renderAssessment();
-  showPhase('review');
+  if (state.replayMode) return;
+  if (endRunConfirmDialog && typeof endRunConfirmDialog.showModal === 'function') {
+    const ru = isLanguageRu();
+    const text = document.getElementById('endRunConfirmText');
+    if (text) text.textContent = ru
+      ? 'Завершить диалог? Покажу разбор.'
+      : 'End this run? You\'ll see your coaching summary.';
+    if (endRunCancelBtn) endRunCancelBtn.textContent = ru ? 'Отмена' : 'Cancel';
+    if (endRunConfirmBtn) endRunConfirmBtn.textContent = ru ? 'Завершить диалог' : 'End run';
+    endRunConfirmDialog.returnValue = '';
+    endRunConfirmDialog.showModal();
+    setTimeout(() => endRunCancelBtn?.focus(), 0);
+    return;
+  }
+  await performFinishRun();
 });
 
+endRunConfirmDialog?.addEventListener('close', async () => {
+  if (endRunConfirmDialog.returnValue !== 'confirm') return;
+  await performFinishRun();
+});
+
+async function performFinishRun() {
+  if (!state.session || sellerMessages().length === 0) return;
+  try {
+    state.session = await api(`api/sessions/${state.session.session_id}/finish`, { method: 'POST' });
+    renderTranscript();
+    renderEndCard({ fromHistory: false });
+  } catch (err) {
+    console.error('finish failed', err);
+  }
+}
+
 suggestBtn.addEventListener('click', async () => {
-  if (!state.session) return;
+  if (!state.session || state.replayMode) return;
+  const ru = isLanguageRu();
+  const labelEl = suggestBtn.querySelector('.run-composer__hint-label');
+  const originalLabel = labelEl ? labelEl.textContent : 'Hint';
   suggestBtn.disabled = true;
+  if (sendBtn) sendBtn.disabled = true;
+  if (labelEl) labelEl.textContent = ru ? 'Готовлю черновик…' : 'Drafting…';
   try {
     const lang = hintLangSelect ? hintLangSelect.value : 'ru';
     const qs = new URLSearchParams({ lang, moveType: state.moveType, proofLayer: state.proofLayer });
@@ -2516,28 +2947,41 @@ suggestBtn.addEventListener('click', async () => {
     state.lastHint = {
       id: result.hint_id || null,
       text: result.suggestion || '',
-      memoryContext: result.memory_context || null
+      memoryContext: result.memory_context || null,
     };
-    state.appliedHintId = null;
-    if (suggestionMeta) suggestionMeta.textContent = `${formatHintMemoryMeta(result.memory_context)} Current framing: ${state.moveType} / ${state.proofLayer}.`;
-    suggestionText.textContent = result.suggestion;
-    suggestionPanel.classList.remove('hidden');
+    state.appliedHintId = result.hint_id || null;
+    const draft = String(result.suggestion || '').trim();
+    if (draft && messageInput) {
+      const existing = messageInput.value.trim();
+      messageInput.value = existing ? `${existing}\n${draft}` : draft;
+      messageInput.focus();
+      try { messageInput.setSelectionRange(messageInput.value.length, messageInput.value.length); } catch {}
+      messageInput.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+    if (hintNote) {
+      const wins = Array.isArray(result.memory_context?.successful) ? result.memory_context.successful.length : 0;
+      const note = ru
+        ? `Черновик из доктрины и ${wins} прошлых диалогов · `
+        : `Drafted from your doctrine and ${wins} prior runs · `;
+      const discardLabel = ru ? 'Сбросить черновик' : 'Discard draft';
+      hintNote.innerHTML = `${escapeHtml(note)}<button type="button" class="run-composer__hint-discard" id="hintDiscardBtn">${escapeHtml(discardLabel)}</button>`;
+      hintNote.classList.remove('hidden');
+      const discardBtn = document.getElementById('hintDiscardBtn');
+      discardBtn?.addEventListener('click', () => {
+        if (messageInput) messageInput.value = '';
+        clearHintNoteSilently();
+      });
+    }
   } catch {
-    state.lastHint = null;
-    state.appliedHintId = null;
-    if (suggestionMeta) suggestionMeta.textContent = '';
-    suggestionText.textContent = 'Could not get a hint.';
-    suggestionPanel.classList.remove('hidden');
+    if (labelEl) labelEl.textContent = ru ? 'Не получилось — попробовать ещё раз' : 'Couldn\'t draft — try again';
+    setTimeout(() => { if (labelEl) labelEl.textContent = originalLabel; }, 2400);
   } finally {
     suggestBtn.disabled = false;
+    if (sendBtn) sendBtn.disabled = false;
+    if (labelEl && labelEl.textContent !== (ru ? 'Не получилось — попробовать ещё раз' : 'Couldn\'t draft — try again')) {
+      labelEl.textContent = originalLabel;
+    }
   }
-});
-
-useSuggestionBtn.addEventListener('click', () => {
-  messageInput.value = suggestionText.textContent;
-  state.appliedHintId = state.lastHint?.id || null;
-  suggestionPanel.classList.add('hidden');
-  messageInput.focus();
 });
 
 // Reset / start another run
@@ -2555,9 +2999,13 @@ function resetToSetup() {
   signalBrief.classList.add('hidden');
   startConvBtn.disabled = true;
   runDetailsBtn?.setAttribute('disabled', '');
-  suggestionPanel.classList.add('hidden');
+  suggestionPanel?.classList.add('hidden');
   if (suggestionMeta) suggestionMeta.textContent = '';
   resetBtn?.classList.add('hidden');
+  state.replayMode = false;
+  state.fromHistory = false;
+  if (runEndCard) { runEndCard.innerHTML = ''; runEndCard.classList.add('hidden'); }
+  clearHintNoteSilently();
   if (state.selectedPersonaId) {
     selectPersona(state.selectedPersonaId);
   } else {
@@ -2657,7 +3105,7 @@ function renderHistoryList() {
   });
 
   historyList.querySelectorAll('.history-view-btn').forEach((btn) => {
-    btn.addEventListener('click', () => openHistoryView(btn.dataset.id));
+    btn.addEventListener('click', () => openSessionInRunReplay(btn.dataset.id));
   });
 
   historyList.querySelectorAll('.history-copy-link-btn').forEach((btn) => {
@@ -2671,6 +3119,25 @@ function renderHistoryList() {
       });
     });
   });
+}
+
+async function openSessionInRunReplay(sessionId) {
+  if (!sessionId) return;
+  try {
+    const session = await api(`api/sessions/${encodeURIComponent(sessionId)}`);
+    if (!session) return;
+    state.session = session;
+    state.replayMode = true;
+    state.fromHistory = true;
+    if (session.bot_id) state.selectedPersonaId = session.bot_id;
+    renderPersonaDropdown();
+    renderTranscript();
+    renderEndCard({ fromHistory: true });
+    showPhase('run');
+  } catch (err) {
+    console.error('replay open failed', err);
+    openHistoryView(sessionId);
+  }
 }
 
 async function openHistoryView(sessionId) {
@@ -2776,6 +3243,13 @@ historyDownloadAllBtn?.addEventListener('click', () => bulkDownload(null));
 historyViewClose?.addEventListener('click', () => historyViewModal?.classList.add('hidden'));
 
 backToHistoryBtn?.addEventListener('click', async () => {
+  showPhase('history');
+  if (!historyData.length) await loadHistory();
+});
+
+runReplayBackBtn?.addEventListener('click', async () => {
+  state.replayMode = false;
+  state.fromHistory = false;
   showPhase('history');
   if (!historyData.length) await loadHistory();
 });
@@ -2912,9 +3386,12 @@ Promise.all([loadDoctrineConfig(), loadPersonas()]).then(async () => {
       if (session && session.status === 'finished') {
         state.session = session;
         state.selectedPersonaId = session.bot_id || state.selectedPersonaId;
+        state.replayMode = true;
+        state.fromHistory = true;
         renderPersonaDropdown();
-        renderAssessment(false);
-        showPhase('review', { replace: true });
+        renderTranscript();
+        renderEndCard({ fromHistory: true });
+        showPhase('run', { replace: true });
         return;
       }
     } catch {}
@@ -2960,8 +3437,11 @@ window.addEventListener('popstate', async () => {
       const session = await api(`api/sessions/${route.shareSessionId}`);
       if (session && session.status === 'finished') {
         state.session = session;
-        renderAssessment(false);
-        showPhase('review', { skipRoute: true });
+        state.replayMode = true;
+        state.fromHistory = true;
+        renderTranscript();
+        renderEndCard({ fromHistory: true });
+        showPhase('run', { skipRoute: true });
         return;
       }
     } catch {}
