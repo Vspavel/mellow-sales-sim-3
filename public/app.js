@@ -1326,6 +1326,43 @@ function isRunFinishedSession() {
   return stage === 'meeting_booked';
 }
 
+// Mirrors server.js detectBuyerMeetingAcceptance (kept in lockstep). Detects
+// explicit buyer ACCEPTANCE of a meeting/call (stronger than a bare mention).
+function detectBuyerMeetingAcceptance(text, lang) {
+  const lower = String(text || '').toLowerCase();
+  const isEN = lang === 'en';
+  if (isEN) {
+    if (/\b(let'?s\s+(do\s+it|talk|connect|meet|schedule|chat|book)|sounds\s+good|that\s+works|i'?m\s+in|works\s+for\s+me|happy\s+to\s+(connect|meet|talk|chat)|sure,?\s*(let'?s|i'?d|we\s+can)|yes,?\s*(let'?s|sounds\s+good|absolutely)|absolutely,?\s*let'?s|great,?\s*let'?s|i'?d\s+be\s+(happy|glad|open)\s+to|book\s+it|set\s+it\s+up|schedule\s+(a\s+)?(call|meeting))\b/i.test(lower)) return true;
+    if (/\b(yes|ok|okay|sure|great|good|fine|alright|works)\b/i.test(lower) && /(15|20)[- ]minute|\bcall\b|\bmeeting\b|\bwalkthrough\b/i.test(lower)) return true;
+    if (/\b(send|share)\b/i.test(lower) && /\b(brief|memo|one-pager|implementation plan|cost breakdown)\b/i.test(lower) && /\b(then|after that|right after|we can)\b/i.test(lower) && /\b(call|meeting|review)\b/i.test(lower)) return true;
+    if (/\b(find|book|hold|set)\b/i.test(lower) && /\b(slot|time)\b/i.test(lower) && /\b(call|meeting|review)\b/i.test(lower)) return true;
+    if (/\b(i'?ll|i will|can|could)\b/i.test(lower) && /\b(find|make|give)\b/i.test(lower) && /(15|20)[- ]minute|\bcall\b|\bmeeting\b|\breview\b/i.test(lower)) return true;
+    return false;
+  } else {
+    if (/(рано|не\s+сейчас|не\s+готов|не\s+готова|пока\s+не|позже|подождите|пришлите\s+материал|отправьте\s+материал|для\s+начала)/.test(lower)) return false;
+    const RU_ANCHOR = '(?:^|[\\s,;!?—])';
+    const RU_TAIL = '(?:[\\s,;!?—]|$)';
+    const strongPhrase = new RegExp(
+      RU_ANCHOR +
+      '(?:давайте\\s+созвонимся|ок[,\\s]+созвонимся|да[,\\s]*давайте|хорошо[,\\s]*давайте' +
+      '|ладно[,\\s]*давайте|конечно[,\\s]*давайте|договорились|согласен|согласна' +
+      '|можно\\s+созвониться|созвонимся|звоните)' +
+      RU_TAIL
+    );
+    if (strongPhrase.test(lower)) return true;
+    const standaloneAgree = new RegExp(
+      RU_ANCHOR +
+      '(?:да|ок|хорошо|ладно|конечно|отлично|согласен|согласна|договорились)' +
+      RU_TAIL
+    );
+    if (standaloneAgree.test(lower) && /(созвон|встреч|звоним|call|meeting)/.test(lower)) return true;
+    if (/(пришлите|отправьте)/.test(lower) && /(brief|memo|one-pager|материал|план внедрения|cost breakdown|summary)/.test(lower) && /(потом|после этого|и тогда|дальше)/.test(lower) && /(созвон|встреч|review call|call)/.test(lower)) return true;
+    if (/(найд[её]м|зафиксир|поставим|заброн|выделю|дам)/.test(lower) && /(слот|время|15 минут|20 минут)/.test(lower) && /(созвон|встреч|review|call)/.test(lower)) return true;
+    if (/(можно|готов|готова|ок|хорошо|ладно)/.test(lower) && /(коротк|15 минут|20 минут)/.test(lower) && /(созвон|встреч|review|call)/.test(lower)) return true;
+    return false;
+  }
+}
+
 function endRunVerdict() {
   const session = state.session;
   if (!session) return { kind: 'fail' };
