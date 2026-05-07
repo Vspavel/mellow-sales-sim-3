@@ -1776,7 +1776,7 @@ function renderTranscript() {
 
 function renderAssessment(fromHistory = false) {
   const a = state.session.assessment;
-  reviewTitle.textContent = 'Run result';
+  reviewTitle.textContent = 'Result';
   // sendResultBtn replaced by native artifact download
   sendResultStatus.textContent = '';
 
@@ -1971,7 +1971,7 @@ async function selectPersona(personaId) {
   setupCta.classList.add('hidden');
   suggestionPanel.classList.add('hidden');
   if (suggestionMeta) suggestionMeta.textContent = '';
-  resetBtn.classList.add('hidden');
+  resetBtn?.classList.add('hidden');
   renderPersonaDropdown();
   renderSetupPersona();
   showPhase('setup', { replace: true });
@@ -2003,7 +2003,7 @@ async function selectPersona(personaId) {
     renderSignalCard();
     signalBrief.classList.remove('hidden');
     setupCta.classList.remove('hidden');
-    resetBtn.classList.remove('hidden');
+    resetBtn?.classList.remove('hidden');
     updateRunState();
     syncRoute(true);
   } catch (error) {
@@ -2414,6 +2414,9 @@ sortDialogues?.addEventListener('change', () => {
   renderDialogueCards(items, analyticsData.recent_finished_total);
 });
 addPersonaInlineBtn?.addEventListener('click', () => openPersonaEditor('create'));
+document.getElementById('runDetailsBtn')?.addEventListener('click', () => {
+  document.getElementById('runDetailsPanel')?.classList.toggle('hidden');
+});
 editPersonaBtn.addEventListener('click', () => openPersonaEditor('edit'));
 cancelPersonaBtn.addEventListener('click', closePersonaEditor);
 cancelPersonaBtn2.addEventListener('click', closePersonaEditor);
@@ -2548,7 +2551,7 @@ function resetToSetup() {
   setupCta.classList.add('hidden');
   suggestionPanel.classList.add('hidden');
   if (suggestionMeta) suggestionMeta.textContent = '';
-  resetBtn.classList.add('hidden');
+  resetBtn?.classList.add('hidden');
   if (state.selectedPersonaId) {
     selectPersona(state.selectedPersonaId);
   } else {
@@ -2557,7 +2560,7 @@ function resetToSetup() {
   syncRoute(true);
 }
 
-resetBtn.addEventListener('click', resetToSetup);
+resetBtn?.addEventListener('click', resetToSetup);
 startAnotherBtn?.addEventListener('click', resetToSetup);
 
 sendResultBtn.addEventListener('click', async () => {
@@ -2830,7 +2833,7 @@ function saveRandomizerConfig() {
 }
 
 function syncRandomizerUI() {
-  if (!randomizerToggle) return;
+  if (!randomizerPanel) return;
   const cfg = state.randomizerConfig;
   // Variability
   if (variabilitySelect) variabilitySelect.value = cfg.variability || 'medium';
@@ -2858,9 +2861,7 @@ function readRandomizerUI() {
   saveRandomizerConfig();
 }
 
-randomizerToggle?.addEventListener('click', () => {
-  randomizerPanel?.classList.toggle('hidden');
-});
+// randomizerToggle click handler removed — <details> handles toggle natively
 
 variabilitySelect?.addEventListener('change', () => { readRandomizerUI(); });
 signalTypeCheckboxes().forEach((cb) => cb.addEventListener('change', () => { readRandomizerUI(); }));

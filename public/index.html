@@ -24,7 +24,7 @@
 
         <nav class="sidebar-nav" aria-label="Primary navigation">
           <div class="sidebar-group">
-            <button id="navRunBtn" class="sidebar-nav-btn is-active" type="button">Run</button>
+            <button id="navRunBtn" class="sidebar-nav-btn is-active" type="button">Start</button>
           </div>
 
           <div class="sidebar-group">
@@ -49,7 +49,7 @@
           <header class="panel-header">
             <a class="app-brand-link" href="/" aria-label="Go to Mellow Sales Simulator home">
               <p class="phase-label">Workspace</p>
-              <h1>Prepare run</h1>
+              <h1>Prepare</h1>
             </a>
           </header>
 
@@ -87,51 +87,47 @@
               </label>
               <label class="field-group" for="personaSelect">
                 <span class="field-label">Persona</span>
-                <div class="persona-row">
-                  <select id="personaSelect" class="text-input persona-select">
-                    <option value="">Choose a persona...</option>
-                  </select>
-                  <button id="addPersonaInlineBtn" class="ghost-btn add-inline-btn" type="button">+add</button>
-                </div>
+                <select id="personaSelect" class="text-input persona-select">
+                  <option value="">Choose a persona...</option>
+                </select>
               </label>
             </div>
 
-            <p class="persona-summary muted" id="selectedPersonaMeta"></p>
+            <p class="persona-summary muted hidden" id="selectedPersonaMeta"></p>
 
             <!-- ③ Primary CTA -->
             <div id="setupCta" class="hidden">
-              <button id="startConversationBtn" class="launch-btn">Start simulation</button>
+              <div class="setup-cta-row">
+                <button id="runDetailsBtn" class="secondary-btn" type="button">Details</button>
+                <button id="startConversationBtn" class="launch-btn">Start simulation</button>
+              </div>
+              <div id="runDetailsPanel" class="run-details-body setup-cta-details hidden">
+                <div class="field-group">
+                  <p class="field-label">System prompt</p>
+                  <p class="preview-intro" id="selectedPersonaPrompt"></p>
+                </div>
+                <div class="field-group">
+                  <p class="field-label">Email behavior layer</p>
+                  <p class="preview-intro" id="selectedPersonaEmailPrompt"></p>
+                </div>
+                <div class="field-group">
+                  <p class="field-label">Required fields</p>
+                  <ul id="requiredFieldsList" class="required-fields-list"></ul>
+                </div>
+                <div id="signalBrief" class="hidden">
+                  <div class="signal-card" id="signalCard"></div>
+                </div>
+                <div class="detail-actions">
+                  <button id="editPersonaBtn" class="ghost-btn hidden" type="button">Edit persona</button>
+                </div>
+              </div>
             </div>
 
             <!-- ④ Additional settings -->
             <div class="setup-secondary">
-              <details class="run-details" id="runDetailsDisclosure">
-                <summary class="run-details-toggle">Run details</summary>
-                <div class="run-details-body">
-                  <div class="field-group">
-                    <p class="field-label">System prompt</p>
-                    <p class="preview-intro" id="selectedPersonaPrompt"></p>
-                  </div>
-                  <div class="field-group">
-                    <p class="field-label">Email behavior layer</p>
-                    <p class="preview-intro" id="selectedPersonaEmailPrompt"></p>
-                  </div>
-                  <div class="field-group">
-                    <p class="field-label">Required fields</p>
-                    <ul id="requiredFieldsList" class="required-fields-list"></ul>
-                  </div>
-                  <div id="signalBrief" class="hidden">
-                    <div class="signal-card" id="signalCard"></div>
-                  </div>
-                  <div class="detail-actions">
-                    <button id="editPersonaBtn" class="ghost-btn hidden" type="button">Edit persona</button>
-                  </div>
-                </div>
-              </details>
-
-              <div class="run-details">
-                <button type="button" id="randomizerToggle" class="run-details-toggle">Signal &amp; randomizer</button>
-                <div class="run-details-body hidden" id="randomizerPanel">
+              <details class="run-details" id="randomizerDetails">
+                <summary class="run-details-toggle">Signal &amp; randomizer</summary>
+                <div class="run-details-body" id="randomizerPanel">
                   <label class="field-group">
                     <span class="field-label">Signal type</span>
                     <select id="signalTypeSelect" class="text-input"></select>
@@ -181,11 +177,7 @@
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-
-            <div class="launch-secondary">
-              <button id="resetBtn" class="ghost-btn hidden" type="button">New run</button>
+              </details>
             </div>
           </div>
 
@@ -434,7 +426,7 @@
           </div>
 
           <div class="run-footer">
-            <button id="finishBtn" class="secondary-btn" disabled>Close run</button>
+            <button id="finishBtn" class="secondary-btn" disabled>Close</button>
           </div>
         </section>
 
@@ -569,7 +561,7 @@
           <header class="panel-header">
             <a class="app-brand-link" href="/" aria-label="Go to Mellow Sales Simulator home">
               <p class="phase-label">History</p>
-              <h1>Run history</h1>
+              <h1>History</h1>
             </a>
           </header>
           <div class="launch-card">
@@ -595,13 +587,13 @@
         <section class="phase-panel hidden" id="reviewPanel">
           <header class="panel-header">
             <a class="app-brand-link" href="/" aria-label="Go to Mellow Sales Simulator home">
-              <p class="phase-label">Run result</p>
-              <h1 id="reviewTitle">Run result</h1>
+              <p class="phase-label">Result</p>
+              <h1 id="reviewTitle">Result</h1>
             </a>
           </header>
           <div id="assessment"></div>
           <div class="run-footer">
-            <button id="startAnotherBtn" type="button">Start another run</button>
+            <button id="startAnotherBtn" type="button">Start another</button>
             <button id="backToHistoryBtn" class="ghost-btn hidden" type="button">Back to history</button>
             <button id="downloadResultBtn" class="secondary-btn hidden" type="button">Download</button>
             <button id="copyShareLinkBtn" class="ghost-btn hidden" type="button">Copy link</button>
