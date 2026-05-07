@@ -2009,6 +2009,7 @@ async function selectPersona(personaId) {
   } catch (error) {
     signalCard.innerHTML = `<p class="muted">${escapeHtml(error.message)}</p>`;
     signalBrief.classList.remove('hidden');
+    setupCta.classList.remove('hidden');
   }
 }
 
