@@ -54,138 +54,142 @@
           </header>
 
           <div class="launch-card">
-            <div class="split-grid split-grid--triple">
+
+            <!-- ① Context strip: fast-select filters, secondary visual weight -->
+            <div class="setup-filter-strip">
               <label class="field-group">
                 <span class="field-label">Side</span>
-                <select id="sideSelect" class="text-input"></select>
+                <select id="sideSelect" class="text-input setup-select"></select>
               </label>
               <label class="field-group">
                 <span class="field-label">Product</span>
-                <select id="productSelect" class="text-input"></select>
+                <select id="productSelect" class="text-input setup-select"></select>
               </label>
               <label class="field-group">
-                <span class="field-label">Signal type</span>
-                <select id="signalTypeSelect" class="text-input"></select>
-              </label>
-            </div>
-
-            <div class="split-grid split-grid--double">
-              <label class="field-group">
-                <span class="field-label">Dialogue type</span>
-                <select id="scenarioDialogueTypeSelect" class="text-input"></select>
+                <span class="field-label">Sales type</span>
+                <select id="scenarioDialogueTypeSelect" class="text-input setup-select"></select>
               </label>
               <label class="field-group">
-                <span class="field-label">Environment</span>
-                <div class="segmented-control" id="dialogueTypePicker">
-                  <button type="button" class="seg-btn is-active" id="dialogueTypeMessenger">Messenger</button>
-                  <button type="button" class="seg-btn" id="dialogueTypeEmail">Email</button>
+                <span class="field-label">Via</span>
+                <div class="setup-env-toggle" id="dialogueTypePicker">
+                  <button type="button" class="env-btn is-active" id="dialogueTypeMessenger">Messenger</button>
+                  <button type="button" class="env-btn" id="dialogueTypeEmail">Email</button>
                 </div>
-                <p class="muted seg-hint" id="dialogueTypeHint">Short, conversational turns. Think LinkedIn DM or Telegram.</p>
+                <span id="dialogueTypeHint" class="hidden"></span>
               </label>
             </div>
 
-            <div class="split-grid split-grid--double">
+            <!-- ② Persona: the deliberate choice -->
+            <div class="setup-persona-row">
               <label class="field-group">
                 <span class="field-label">Group</span>
-                <select id="groupSelect" class="text-input"></select>
+                <select id="groupSelect" class="text-input setup-select"></select>
               </label>
               <label class="field-group" for="personaSelect">
-                <span class="field-label">Profile</span>
-              <div class="persona-row">
-                <select id="personaSelect" class="text-input persona-select">
-                  <option value="">Choose a profile...</option>
-                </select>
-                <button id="addPersonaInlineBtn" class="ghost-btn add-inline-btn" type="button">+add</button>
-              </div>
+                <span class="field-label">Persona</span>
+                <div class="persona-row">
+                  <select id="personaSelect" class="text-input persona-select">
+                    <option value="">Choose a persona...</option>
+                  </select>
+                  <button id="addPersonaInlineBtn" class="ghost-btn add-inline-btn" type="button">+add</button>
+                </div>
               </label>
             </div>
 
             <p class="persona-summary muted" id="selectedPersonaMeta"></p>
 
+            <!-- ③ Primary CTA -->
             <div id="setupCta" class="hidden">
               <button id="startConversationBtn" class="launch-btn">Start simulation</button>
             </div>
 
-            <details class="run-details" id="runDetailsDisclosure">
-              <summary class="run-details-toggle">Run details</summary>
-              <div class="run-details-body">
-                <div class="field-group">
-                  <p class="field-label">System prompt</p>
-                  <p class="preview-intro" id="selectedPersonaPrompt"></p>
-                </div>
-                <div class="field-group">
-                  <p class="field-label">Email behavior layer</p>
-                  <p class="preview-intro" id="selectedPersonaEmailPrompt"></p>
-                </div>
-                <div class="field-group">
-                  <p class="field-label">Required fields</p>
-                  <ul id="requiredFieldsList" class="required-fields-list"></ul>
-                </div>
-                <div id="signalBrief" class="hidden">
-                  <div class="signal-card" id="signalCard"></div>
-                </div>
-                <div class="detail-actions">
-                  <button id="editPersonaBtn" class="ghost-btn hidden" type="button">Edit role</button>
-                </div>
-              </div>
-            </details>
-
-            <div class="run-details">
-              <button type="button" id="randomizerToggle" class="run-details-toggle randomizer-toggle">Randomizer settings</button>
-              <div class="run-details-body hidden" id="randomizerPanel">
-                <div class="field-group">
-                  <label class="field-label" for="variabilitySelect">Signal variability</label>
-                  <select id="variabilitySelect" class="text-input">
-                    <option value="off">Off — same card every run</option>
-                    <option value="low">Low — slight variation</option>
-                    <option value="medium" selected>Medium — default</option>
-                    <option value="high">High — maximum variation</option>
-                  </select>
-                </div>
-                <div class="field-group">
-                  <p class="field-label">Signal types</p>
-                  <div class="signal-type-grid">
-                    <label class="signal-type-label"><input class="signal-type-cb" type="checkbox" value="COMPLIANCE_PRESSURE" checked /> Compliance check</label>
-                    <label class="signal-type-label"><input class="signal-type-cb" type="checkbox" value="PAIN_SIGNAL" checked /> Operational payment failure</label>
-                    <label class="signal-type-label"><input class="signal-type-cb" type="checkbox" value="FUNDRAISING_DILIGENCE" checked /> Post-round diligence</label>
-                    <label class="signal-type-label"><input class="signal-type-cb" type="checkbox" value="TEAM_SCALING" checked /> Team growth overload</label>
-                    <label class="signal-type-label"><input class="signal-type-cb" type="checkbox" value="OPERATIONS_OVERLOAD" checked /> Ops overload</label>
-                    <label class="signal-type-label"><input class="signal-type-cb" type="checkbox" value="FINANCE_CONTROL_GAP" checked /> Finance control gap</label>
-                    <label class="signal-type-label"><input class="signal-type-cb" type="checkbox" value="LEGAL_REVIEW_TRIGGER" checked /> Legal review trigger</label>
-                    <label class="signal-type-label"><input class="signal-type-cb" type="checkbox" value="OUTSIDE_COUNSEL_CHECK" checked /> Outside counsel check</label>
+            <!-- ④ Additional settings -->
+            <div class="setup-secondary">
+              <details class="run-details" id="runDetailsDisclosure">
+                <summary class="run-details-toggle">Run details</summary>
+                <div class="run-details-body">
+                  <div class="field-group">
+                    <p class="field-label">System prompt</p>
+                    <p class="preview-intro" id="selectedPersonaPrompt"></p>
+                  </div>
+                  <div class="field-group">
+                    <p class="field-label">Email behavior layer</p>
+                    <p class="preview-intro" id="selectedPersonaEmailPrompt"></p>
+                  </div>
+                  <div class="field-group">
+                    <p class="field-label">Required fields</p>
+                    <ul id="requiredFieldsList" class="required-fields-list"></ul>
+                  </div>
+                  <div id="signalBrief" class="hidden">
+                    <div class="signal-card" id="signalCard"></div>
+                  </div>
+                  <div class="detail-actions">
+                    <button id="editPersonaBtn" class="ghost-btn hidden" type="button">Edit persona</button>
                   </div>
                 </div>
-                <div class="field-group">
-                  <label class="field-label">
-                    <input type="checkbox" id="randomFactorToggle" />
-                    Enable random interruption factor
+              </details>
+
+              <div class="run-details">
+                <button type="button" id="randomizerToggle" class="run-details-toggle">Signal &amp; randomizer</button>
+                <div class="run-details-body hidden" id="randomizerPanel">
+                  <label class="field-group">
+                    <span class="field-label">Signal type</span>
+                    <select id="signalTypeSelect" class="text-input"></select>
                   </label>
-                  <p class="muted seg-hint">When enabled, the persona may go silent, say they're busy, or defer — simulating real outreach unpredictability.</p>
-                </div>
-                <div id="randomFactorPanel" class="hidden">
-                  <div class="prob-grid">
-                    <label class="field-group">
-                      <span class="field-label">Ghost (silence) %</span>
-                      <input id="ghostProbInput" class="text-input prob-input" type="number" min="0" max="100" value="15" />
-                    </label>
-                    <label class="field-group">
-                      <span class="field-label">Busy / no time %</span>
-                      <input id="busyProbInput" class="text-input prob-input" type="number" min="0" max="100" value="10" />
-                    </label>
-                    <label class="field-group">
-                      <span class="field-label">Write later / defer %</span>
-                      <input id="deferProbInput" class="text-input prob-input" type="number" min="0" max="100" value="10" />
-                    </label>
+                  <label class="field-group">
+                    <span class="field-label">Signal variability</span>
+                    <select id="variabilitySelect" class="text-input">
+                      <option value="off">Off — same card every run</option>
+                      <option value="low">Low — slight variation</option>
+                      <option value="medium" selected>Medium — default</option>
+                      <option value="high">High — maximum variation</option>
+                    </select>
+                  </label>
+                  <div class="field-group">
+                    <p class="field-label">Signal pool</p>
+                    <div class="signal-type-grid">
+                      <label class="signal-type-label"><input class="signal-type-cb" type="checkbox" value="COMPLIANCE_PRESSURE" checked /> Compliance check</label>
+                      <label class="signal-type-label"><input class="signal-type-cb" type="checkbox" value="PAIN_SIGNAL" checked /> Operational payment failure</label>
+                      <label class="signal-type-label"><input class="signal-type-cb" type="checkbox" value="FUNDRAISING_DILIGENCE" checked /> Post-round diligence</label>
+                      <label class="signal-type-label"><input class="signal-type-cb" type="checkbox" value="TEAM_SCALING" checked /> Team growth overload</label>
+                      <label class="signal-type-label"><input class="signal-type-cb" type="checkbox" value="OPERATIONS_OVERLOAD" checked /> Ops overload</label>
+                      <label class="signal-type-label"><input class="signal-type-cb" type="checkbox" value="FINANCE_CONTROL_GAP" checked /> Finance control gap</label>
+                      <label class="signal-type-label"><input class="signal-type-cb" type="checkbox" value="LEGAL_REVIEW_TRIGGER" checked /> Legal review trigger</label>
+                      <label class="signal-type-label"><input class="signal-type-cb" type="checkbox" value="OUTSIDE_COUNSEL_CHECK" checked /> Outside counsel check</label>
+                    </div>
+                  </div>
+                  <label class="field-group">
+                    <span class="field-label">
+                      <input type="checkbox" id="randomFactorToggle" />
+                      Random interruption factor
+                    </span>
+                  </label>
+                  <div id="randomFactorPanel" class="hidden">
+                    <div class="prob-grid">
+                      <label class="field-group">
+                        <span class="field-label">Ghost (silence) %</span>
+                        <input id="ghostProbInput" class="text-input prob-input" type="number" min="0" max="100" value="15" />
+                      </label>
+                      <label class="field-group">
+                        <span class="field-label">Busy / no time %</span>
+                        <input id="busyProbInput" class="text-input prob-input" type="number" min="0" max="100" value="10" />
+                      </label>
+                      <label class="field-group">
+                        <span class="field-label">Write later / defer %</span>
+                        <input id="deferProbInput" class="text-input prob-input" type="number" min="0" max="100" value="10" />
+                      </label>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
+
             <div class="launch-secondary">
               <button id="resetBtn" class="ghost-btn hidden" type="button">New run</button>
             </div>
           </div>
 
-          <!-- hidden sentinel for JS compat -->
+          <!-- hidden sentinels for JS compat -->
           <h1 id="selectedPersonaName" class="hidden"></h1>
           <div id="emptySetup" class="hidden"></div>
         </section>

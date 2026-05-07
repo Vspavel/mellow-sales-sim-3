@@ -674,6 +674,69 @@ button:disabled { opacity: 0.45; cursor: default; }
 .inheritance-card p { line-height: 1.5; }
 .settings-layer-hidden { display: none !important; }
 
+/* ── Setup page v3.1 ─────────────────────────────────────────────────────────── */
+
+/* Filter strip: compact, de-weighted row of context selectors */
+.setup-filter-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  align-items: flex-end;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+/* Smaller padding for the fast-select fields in the strip */
+.setup-select {
+  padding: 8px 10px;
+  font-size: 0.84rem;
+  border-radius: var(--radius-sm);
+}
+
+/* Instrument toggle: compact binary, replaces the heavy segmented pill */
+.setup-env-toggle {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--surface);
+}
+.env-btn {
+  background: transparent;
+  color: var(--muted);
+  border: none;
+  border-radius: 0;
+  padding: 7px 14px;
+  font-size: 0.84rem;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+.env-btn + .env-btn { border-left: 1px solid var(--border); }
+.env-btn.is-active { background: var(--text); color: var(--bg); font-weight: 600; }
+.env-btn:hover:not(:disabled) { filter: none; background: var(--surface-warm); color: var(--text); }
+.env-btn.is-active:hover:not(:disabled) { background: var(--text-soft); color: var(--bg); }
+
+/* Persona row: group (narrow) + persona (wide) side by side */
+.setup-persona-row {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: 14px;
+  align-items: end;
+}
+
+/* Secondary settings: visually grouped and de-weighted */
+.setup-secondary {
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.setup-secondary > .run-details {
+  border: none;
+  border-bottom: 1px solid var(--border-soft);
+  border-radius: 0;
+}
+.setup-secondary > .run-details:last-child { border-bottom: none; }
+
 /* v3.1 — Hierarchy restoration: orange reserved for section-level context only.
    Card-level labels (inside cards/stage panels) become muted to stop competing. */
 .run-insight-card:not(.run-insight-card--primary) .phase-label,
@@ -688,6 +751,7 @@ button:disabled { opacity: 0.45; cursor: default; }
 }
 
 @media (max-width: 640px) {
+  .setup-persona-row { grid-template-columns: 1fr; }
   body::before { display: none; }
   .shell { grid-template-columns: 1fr; padding: 20px 16px 60px; gap: 18px; }
   .sidebar { position: static; min-height: auto; padding: 14px; border-radius: 16px; }
