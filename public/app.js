@@ -2962,9 +2962,9 @@ finishBtn.addEventListener('click', async () => {
     const text = document.getElementById('endRunConfirmText');
     if (text) text.textContent = ru
       ? 'Завершить диалог? Покажу разбор.'
-      : 'End this run? You\'ll see your coaching summary.';
+      : 'End this conversation? You\'ll see your coaching summary.';
     if (endRunCancelBtn) endRunCancelBtn.textContent = ru ? 'Отмена' : 'Cancel';
-    if (endRunConfirmBtn) endRunConfirmBtn.textContent = ru ? 'Завершить диалог' : 'End run';
+    if (endRunConfirmBtn) endRunConfirmBtn.textContent = ru ? 'Завершить диалог' : 'End conversation';
     endRunConfirmDialog.returnValue = '';
     endRunConfirmDialog.showModal();
     setTimeout(() => endRunCancelBtn?.focus(), 0);
