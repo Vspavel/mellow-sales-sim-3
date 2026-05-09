@@ -964,7 +964,6 @@ function renderBuyerBriefPanel() {
     <div class="detail-row"><strong>Doctrine</strong><span>${escapeHtml(persona?.doctrine_family_label || persona?.doctrine_family || 'Custom')}</span></div>
     <div class="detail-row"><strong>Role essence</strong><span>${escapeHtml(roleEssence(persona))}</span></div>
     <div class="detail-row"><strong>What matters now</strong><span>${escapeHtml(card.probable_pain || card.what_happened || 'Narrow the real problem before you pitch.')}</span></div>
-    <div class="detail-row"><strong>Desired next step</strong><span>${escapeHtml(currentDesiredStep())}</span></div>
   `;
 }
 

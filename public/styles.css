@@ -366,7 +366,8 @@ button:disabled { opacity: 0.45; cursor: default; }
 .buyer-metric-item { gap: 5px; }
 .buyer-metric-item span:last-child { align-self: flex-start; }
 .run-footer { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding-top: 2px; }
-.phase-panel--run .detail-actions { justify-content: flex-end; }
+.phase-panel--run .detail-actions,
+.phase-panel--conversation .detail-actions { justify-content: flex-end; }
 
 .channel-badge { display: inline-flex; align-items: center; border-radius: var(--radius-pill); padding: 4px 10px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
 .channel-badge--messenger { background: var(--accent-softest); color: var(--accent-hover); border: 1px solid var(--accent-soft); }
@@ -844,7 +845,8 @@ button:disabled { opacity: 0.45; cursor: default; }
   border: 0;
 }
 
-.phase-panel--run { display: flex; flex-direction: column; gap: 0; }
+.phase-panel--run,
+.phase-panel--conversation { display: flex; flex-direction: column; gap: 0; }
 
 .run-header { display: flex; flex-direction: column; gap: 6px; max-width: 720px; margin: 0 auto 16px; width: 100%; }
 .run-header h1 { font-family: var(--font-display); font-size: 2.25rem; line-height: 1.05; letter-spacing: -0.02em; }
