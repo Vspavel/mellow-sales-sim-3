@@ -972,25 +972,27 @@ function renderRunSignalPanel() {
   if (!runSignalPanel) return;
   const card = state.session?.sde_card;
   if (!card) {
-    runSignalPanel.innerHTML = '<p class="muted">Start a session to see the active signal.</p>';
-    if (runSignalBadge) runSignalBadge.textContent = 'No active session';
+    if (runSignalBadge) runSignalBadge.textContent = '';
+    runSignalPanel.innerHTML = '';
+    if (runSignalCard) runSignalCard.classList.add('is-hidden');
     return;
   }
 
-  if (runSignalBadge) runSignalBadge.textContent = 'Actual session signal';
-  const hasSellerTurnsForSignal = (state.session?.transcript || []).some((m) => m.role === 'seller');
+  if (runSignalCard) runSignalCard.classList.remove('is-hidden');
+  if (runSignalBadge) runSignalBadge.textContent = signalTypeLabel(card.signal_type);
+  const hasSellerTurns = (state.session?.transcript || []).some((m) => m.role === 'seller');
+  const hintLine = !hasSellerTurns ? (card.first_touch_hint || card.probable_pain || '') : '';
+  const chips = [heatLabel(card.heat), card.outreach_window].filter(Boolean);
   runSignalPanel.innerHTML = `
-    <div class="meta-grid run-signal-meta">
-      <div class="meta-item"><strong>Signal type</strong><span>${escapeHtml(signalTypeLabel(card.signal_type))}</span></div>
-      <div class="meta-item"><strong>Heat</strong><span>${escapeHtml(heatLabel(card.heat))}</span></div>
-      <div class="meta-item"><strong>Outreach window</strong><span>${escapeHtml(card.outreach_window)}</span></div>
-    </div>
-    <p class="run-signal-text">${escapeHtml(card.rendered_text || card.what_happened || '')}</p>
-    <div class="run-signal-details">
-      <div class="detail-row"><strong>What happened</strong><span>${escapeHtml(card.what_happened)}</span></div>
-      <div class="detail-row"><strong>Probable pain</strong><span>${escapeHtml(card.probable_pain)}</span></div>
-      ${!hasSellerTurnsForSignal ? `<div class="detail-row"><strong>First-touch hint</strong><span>${escapeHtml(card.first_touch_hint)}</span></div>` : ''}
-    </div>
+    ${chips.length ? `<div class="run-signal-chip-card__chips">${chips.map((c) => `<span class="run-signal-pill">${escapeHtml(c)}</span>`).join('')}</div>` : ''}
+    ${hintLine ? `<p class="signal-hint-line">${escapeHtml(hintLine)}</p>` : ''}
+    <details class="signal-details-expand">
+      <summary>Details</summary>
+      <div class="signal-details-body">
+        <div class="detail-row"><strong>What happened</strong><span>${escapeHtml(card.what_happened || '')}</span></div>
+        <div class="detail-row"><strong>Probable pain</strong><span>${escapeHtml(card.probable_pain || '')}</span></div>
+      </div>
+    </details>
   `;
 }
 
