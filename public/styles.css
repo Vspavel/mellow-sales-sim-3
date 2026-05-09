@@ -366,6 +366,9 @@ button:disabled { opacity: 0.45; cursor: default; }
 .buyer-metric-item { gap: 5px; }
 .buyer-metric-item span:last-child { align-self: flex-start; }
 .run-footer { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding-top: 2px; }
+.run-footer__secondary-group { display: flex; gap: 8px; }
+.analytics-filters__secondary { width: 100%; }
+.analytics-filters__secondary-body { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 .phase-panel--run .detail-actions,
 .phase-panel--conversation .detail-actions { justify-content: flex-end; }
 

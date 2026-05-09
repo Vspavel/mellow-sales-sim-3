@@ -418,21 +418,26 @@
               <div class="analytics-filters analytics-filters--extended">
                 <select id="analyticsSideFilter" class="analytics-filter-select"></select>
                 <select id="analyticsProductFilter" class="analytics-filter-select"></select>
-                <select id="analyticsSalesTypeFilter" class="analytics-filter-select"></select>
-                <select id="analyticsInstrumentFilter" class="analytics-filter-select"></select>
-                <select id="analyticsPersonaModeFilter" class="analytics-filter-select">
-                  <option value="general">General</option>
-                  <option value="group">Persona group</option>
-                  <option value="persona">Persona</option>
-                </select>
-                <select id="analyticsGroupFilter" class="analytics-filter-select"></select>
-                <select id="analyticsPersonaFilter" class="analytics-filter-select"></select>
-                <select id="analyticsSignalTypeFilter" class="analytics-filter-select"></select>
                 <select id="analyticsAggregateBy" class="analytics-filter-select">
                   <option value="average">Average slice</option>
                   <option value="group">By group</option>
                   <option value="persona">By persona</option>
                 </select>
+                <details class="analytics-filters__secondary">
+                  <summary class="ghost-btn--inline">More filters</summary>
+                  <div class="analytics-filters__secondary-body">
+                    <select id="analyticsSalesTypeFilter" class="analytics-filter-select"></select>
+                    <select id="analyticsInstrumentFilter" class="analytics-filter-select"></select>
+                    <select id="analyticsPersonaModeFilter" class="analytics-filter-select">
+                      <option value="general">General</option>
+                      <option value="group">Persona group</option>
+                      <option value="persona">Persona</option>
+                    </select>
+                    <select id="analyticsGroupFilter" class="analytics-filter-select"></select>
+                    <select id="analyticsPersonaFilter" class="analytics-filter-select"></select>
+                    <select id="analyticsSignalTypeFilter" class="analytics-filter-select"></select>
+                  </div>
+                </details>
               </div>
             </div>
 
@@ -540,10 +545,15 @@
           <div class="run-footer">
             <button id="startAnotherBtn" type="button">Start another</button>
             <button id="backToHistoryBtn" class="ghost-btn hidden" type="button">Back to history</button>
-            <button id="downloadResultBtn" class="secondary-btn hidden" type="button">Download</button>
-            <button id="copyShareLinkBtn" class="ghost-btn hidden" type="button">Copy link</button>
-            <button id="sendResultBtn" class="secondary-btn hidden" type="button">Send result email</button>
-            <span id="sendResultStatus" class="muted result-status"></span>
+            <div class="run-footer__secondary-group">
+              <button id="downloadResultBtn" class="ghost-btn hidden" type="button">Download</button>
+              <button id="copyShareLinkBtn" class="ghost-btn hidden" type="button">Copy link</button>
+            </div>
+            <details id="sendResultDetail" class="hidden">
+              <summary class="ghost-btn--inline">Send result email</summary>
+              <button id="sendResultBtn" class="ghost-btn hidden" type="button">Send</button>
+              <span id="sendResultStatus" class="muted result-status"></span>
+            </details>
           </div>
         </section>
       </main>
