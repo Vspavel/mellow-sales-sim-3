@@ -173,14 +173,14 @@ button:disabled { opacity: 0.45; cursor: default; }
 .mellow-logo--sm { font-size: 1.3rem; }
 .mellow-logo--xs { font-size: 1rem; }
 
-.shell { position: relative; z-index: 1; display: grid; grid-template-columns: 248px minmax(0, 1fr); gap: 28px; min-height: 100dvh; max-width: 1480px; margin: 0 auto; padding: 32px 24px 80px; align-items: start; }
+.shell { position: relative; z-index: 1; display: grid; grid-template-columns: 248px minmax(0, 1fr); gap: 24px; min-height: 100dvh; max-width: 1480px; margin: 0 auto; padding: 24px 24px 48px; align-items: start; }
 .sidebar {
   position: sticky;
   top: 24px;
   display: flex;
   flex-direction: column;
-  gap: 22px;
-  padding: 24px;
+  gap: 16px;
+  padding: 18px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
@@ -232,14 +232,14 @@ button:disabled { opacity: 0.45; cursor: default; }
 .settings-mode-switch .sidebar-nav-btn.is-active { background: var(--accent-soft); }
 .settings-layer-hidden { display: none !important; }
 
-.phase-panel { display: flex; flex-direction: column; gap: 24px; }
-.panel-header { display: flex; flex-direction: column; gap: 8px; margin-bottom: 4px; }
+.phase-panel { display: flex; flex-direction: column; gap: 18px; }
+.panel-header { display: flex; flex-direction: column; gap: 6px; margin-bottom: 2px; }
 .panel-header h1 {
   font-family: var(--font-display);
-  font-size: 2.25rem;
-  line-height: 1.05;
+  font-size: 1.75rem;
+  line-height: 1.1;
   font-weight: 500;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.02em;
   color: var(--text);
 }
 .app-brand-link { display: inline-flex; flex-direction: column; gap: 4px; width: fit-content; color: inherit; text-decoration: none; }
@@ -260,11 +260,11 @@ button:disabled { opacity: 0.45; cursor: default; }
 .launch-card {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
-  padding: 28px 28px 24px;
+  padding: 20px 20px 18px;
   box-shadow: var(--shadow-sm);
 }
 .persona-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2378726b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; cursor: pointer; }
@@ -386,8 +386,8 @@ button:disabled { opacity: 0.45; cursor: default; }
 /* Analytics */
 .analytics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
 .analytics-kpi-card { gap: 8px; }
-/* [DS-ext] 2.25rem = font-size-2xl (36px), pending extension request MEL-1767 */
-.analytics-kpi-value { font-size: 2.25rem; font-weight: 700; letter-spacing: -0.03em; }
+/* [DS-ext] reduced to 1.75rem for compactness — MEL-1818 */
+.analytics-kpi-value { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.03em; }
 .analytics-table { display: flex; flex-direction: column; gap: 8px; }
 .analytics-row { display: grid; grid-template-columns: minmax(160px, 1.4fr) repeat(5, minmax(68px, 0.7fr)); gap: 10px; align-items: center; padding: 10px 12px; border-radius: 12px; background: var(--surface-subtle); border: 1px solid var(--border); font-size: 0.88rem; }
 .analytics-row--head { background: transparent; border: none; padding: 0 2px 4px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
@@ -476,11 +476,11 @@ button:disabled { opacity: 0.45; cursor: default; }
 .coaching-item p { font-size: 0.88rem; line-height: 1.5; }
 .buyer-state-summary { display: flex; flex-direction: column; gap: 14px; }
 .buyer-state-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(148px, 1fr)); gap: 10px; }
-.buyer-state-card { border: 1px solid var(--border); border-radius: 12px; background: var(--surface-subtle); padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+.buyer-state-card { border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-subtle); padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
 .buyer-state-card-top { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
 .buyer-state-card-top strong { font-size: 0.82rem; line-height: 1.35; }
 .buyer-state-value-row { display: flex; align-items: baseline; gap: 10px; }
-.buyer-state-value { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.03em; }
+.buyer-state-value { font-size: 1rem; font-weight: 700; letter-spacing: -0.02em; }
 .buyer-state-delta { font-size: 0.82rem; font-weight: 700; color: var(--muted); }
 .buyer-state-delta--up { color: var(--success-text); }
 .buyer-state-delta--down { color: var(--fail-text); }
@@ -527,12 +527,12 @@ button:disabled { opacity: 0.45; cursor: default; }
 .modal-card {
   width: min(720px, 100%);
   background: var(--surface);
-  border-radius: 20px;
-  padding: 32px;
+  border-radius: var(--radius-card);
+  padding: 22px 24px;
   border: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
   box-shadow: var(--shadow-lg);
 }
 .persona-form { display: flex; flex-direction: column; gap: 18px; }
@@ -855,7 +855,7 @@ button:disabled { opacity: 0.45; cursor: default; }
 .phase-panel--conversation { display: flex; flex-direction: column; gap: 0; }
 
 .run-header { display: flex; flex-direction: column; gap: 6px; max-width: 720px; margin: 0 auto 16px; width: 100%; }
-.run-header h1 { font-family: var(--font-display); font-size: 2.25rem; line-height: 1.05; letter-spacing: -0.02em; }
+.run-header h1 { font-family: var(--font-display); font-size: 1.75rem; line-height: 1.1; letter-spacing: -0.02em; }
 .run-meta-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 0.86rem; color: var(--muted); margin-top: 6px; }
 .run-meta-strip #runMetaPersona { color: var(--text); font-weight: 500; }
 .run-meta-strip #runStatus { color: var(--muted); }
