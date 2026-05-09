@@ -514,18 +514,18 @@
           <div class="launch-card">
             <div class="split-row align-center analytics-head-row">
               <div>
-                <p class="muted" id="historyMeta">Загрузка...</p>
+                <p class="muted" id="historyMeta">Loading...</p>
               </div>
               <div class="detail-actions">
-                <button id="refreshHistoryBtn" class="ghost-btn" type="button">Обновить</button>
-                <button id="backFromHistoryBtn" class="ghost-btn" type="button">Назад</button>
+                <button id="refreshHistoryBtn" class="ghost-btn" type="button">Refresh</button>
+                <button id="backFromHistoryBtn" class="ghost-btn" type="button">Back</button>
               </div>
             </div>
             <div class="history-bulk-actions detail-actions hidden" id="historyBulkActions">
-              <button id="historySelectAllBtn" class="ghost-btn" type="button">Выбрать все</button>
-              <button id="historyDeselectAllBtn" class="ghost-btn" type="button">Снять выбор</button>
-              <button id="historyDownloadSelectedBtn" class="secondary-btn" type="button">Скачать выбранные</button>
-              <button id="historyDownloadAllBtn" class="ghost-btn" type="button">Скачать все</button>
+              <button id="historySelectAllBtn" class="ghost-btn" type="button">Select all</button>
+              <button id="historyDeselectAllBtn" class="ghost-btn" type="button">Deselect all</button>
+              <button id="historyDownloadSelectedBtn" class="secondary-btn" type="button">Download selected</button>
+              <button id="historyDownloadAllBtn" class="ghost-btn" type="button">Download all</button>
             </div>
             <div id="historyList" class="history-list"></div>
           </div>
@@ -533,8 +533,8 @@
 
         <section class="phase-panel hidden" id="reviewPanel">
           <header class="panel-header">
-            <p class="phase-label">Result</p>
-            <h1 id="reviewTitle">Result</h1>
+            <p class="phase-label">Workspace</p>
+            <h1 id="reviewTitle">Review</h1>
           </header>
           <div id="assessment"></div>
           <div class="run-footer">
@@ -543,30 +543,10 @@
             <button id="downloadResultBtn" class="secondary-btn hidden" type="button">Download</button>
             <button id="copyShareLinkBtn" class="ghost-btn hidden" type="button">Copy link</button>
             <button id="sendResultBtn" class="secondary-btn hidden" type="button">Send result email</button>
-            <span id="sendResultStatus" class="muted" style="font-size:0.85em"></span>
+            <span id="sendResultStatus" class="muted result-status"></span>
           </div>
         </section>
       </main>
-    </div>
-
-    <div id="historyViewModal" class="modal-shell hidden">
-      <div class="modal-card">
-        <div class="split-row">
-          <div>
-            <p class="phase-label">История бесед</p>
-            <h2 id="historyViewTitle"></h2>
-          </div>
-          <button id="historyViewClose" class="ghost-btn" type="button">Закрыть</button>
-        </div>
-        <p class="muted" id="historyViewMeta"></p>
-        <div id="historyViewVerdict" style="margin:8px 0"></div>
-        <div class="detail-actions" style="margin-bottom:12px">
-          <a id="historyViewDownloadJson" class="ghost-btn" download>JSON</a>
-          <a id="historyViewDownloadMd" class="ghost-btn" download>MD</a>
-        </div>
-        <div id="historyViewCriteria" class="coaching-list" style="margin-bottom:16px"></div>
-        <div id="historyViewTranscript" class="transcript" style="max-height:400px;overflow-y:auto"></div>
-      </div>
     </div>
 
     <div id="personaEditor" class="modal-shell hidden">
@@ -648,7 +628,7 @@
       <div class="modal-card history-view-modal-card">
         <div class="split-row">
           <div>
-            <p class="phase-label">Беседа</p>
+            <p class="phase-label">Conversation</p>
             <h2 id="historyViewTitle">—</h2>
           </div>
           <div class="detail-actions">
