@@ -987,54 +987,45 @@ button:disabled { opacity: 0.45; cursor: default; }
 }
 .bubble--buyer .bubble__time { text-align: left; color: var(--muted); }
 
-/* System signal bubble (Tier-A, full width, accent left bar) */
+/* System signal bubble (reskinned as message bubble, MEL-1820) */
 .bubble--system {
   display: block;
-  max-width: 100%;
+  max-width: 90%;
   background: var(--surface-warm);
   border: 1px solid var(--border);
-  border-radius: var(--radius-card);
-  padding: 10px 14px 12px;
+  border-radius: 16px;
+  border-bottom-left-radius: 6px;
+  padding: 12px 16px;
   position: relative;
-  overflow: hidden;
-}
-.bubble--system::before {
-  content: '';
-  position: absolute;
-  left: 0; top: 0; bottom: 0;
-  width: 3px;
-  background: var(--accent);
 }
 .bubble--system__eyebrow {
-  font-size: 0.68rem;
+  font-size: 0.7rem;
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--muted);
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 .bubble--system__headline {
   font-family: var(--font-body);
   font-size: 0.95rem;
   line-height: 1.35;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text);
-  margin: 0 0 6px;
+  margin: 0 0 4px;
 }
-.bubble--system__chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 6px; }
+.bubble--system__chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 4px; }
 .bubble--system__chips .run-signal-pill { background: var(--surface); border: 1px solid var(--border); color: var(--text); font-size: 0.75rem; padding: 3px 8px; min-height: 0; }
 .bubble--system__persona-title { font-size: 0.85rem; font-weight: 600; color: var(--text); margin: 0; }
-.bubble--system__persona-essence { font-size: 0.8rem; line-height: 1.4; margin: 1px 0 0; }
+.bubble--system__persona-essence { font-size: 0.8rem; line-height: 1.4; margin: 0; }
 .bubble--system__opener {
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid var(--border);
+  margin-top: 6px;
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
-.bubble--system__opener-label { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin: 0; }
-.bubble--system__opener-text { font-size: 0.88rem; line-height: 1.45; color: var(--text); margin: 0; }
+.bubble--system__opener-label { font-size: 0.68rem; font-weight: 600; color: var(--muted); margin: 0; }
+.bubble--system__opener-text { font-size: 0.88rem; line-height: 1.55; color: var(--text); margin: 0; }
 .bubble--system__use-draft { align-self: flex-start; margin-top: 2px; padding: 4px 10px; font-size: 0.78rem; }
 
 .bubble--system__skeleton { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
