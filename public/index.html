@@ -310,15 +310,15 @@
             </p>
           </header>
 
-          <div id="progressRail" class="run-stage-rail" role="list" aria-label="Acceptance stage progress"></div>
-          <p id="progressStageMeta" class="run-stage-hint muted">Waiting for first seller move</p>
+          <!-- hidden compat stubs — JS references these but they must not render -->
+          <div id="progressRail" class="hidden" role="list" aria-hidden="true"></div>
+          <p id="progressStageMeta" class="hidden"></p>
+          <span id="runSignalCard" class="hidden" aria-hidden="true">
+            <span id="runSignalBadge"></span>
+            <span id="runSignalPanel"></span>
+          </span>
 
           <div class="run-thread-column">
-            <div id="runSignalCard" class="run-signal-chip-card">
-              <span id="runSignalBadge" class="run-signal-chip-card__badge"></span>
-              <div id="runSignalPanel" class="run-signal-chip-card__panel"></div>
-            </div>
-
             <div id="transcript" class="run-thread" role="log" aria-live="polite" aria-label="Conversation thread"></div>
 
             <div class="run-composer-slot" id="runComposerSlot">
