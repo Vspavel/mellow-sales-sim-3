@@ -212,7 +212,7 @@ const BUILTIN_PERSONAS = {
     cards: [
       {
         card_id: 'andrey-card-1',
-        signal_type: 'COMPLIANCE_PRESSURE',
+        signal_type: 'compliance_pressure',
         heat: 'hot',
         outreach_window: '48 часов',
         contact: { name: 'Андрей Волков', title: 'CFO', linkedin: 'linkedin.com/in/andrey-volkov' },
@@ -233,7 +233,7 @@ const BUILTIN_PERSONAS = {
       },
       {
         card_id: 'andrey-card-2',
-        signal_type: 'FUNDRAISING_DILIGENCE',
+        signal_type: 'fundraising_diligence',
         heat: 'warm',
         outreach_window: '3 недели',
         contact: { name: 'Андрей Волков', title: 'CFO', linkedin: 'linkedin.com/in/andrey-volkov' },
@@ -264,7 +264,7 @@ const BUILTIN_PERSONAS = {
     cards: [
       {
         card_id: 'alexey-card-1',
-        signal_type: 'PAIN_SIGNAL',
+        signal_type: 'pain_signal',
         heat: 'warm',
         outreach_window: '72 часа',
         contact: { name: 'Алексей Громов', title: 'CEO / Founder', linkedin: 'linkedin.com/in/alexey-gromov' },
@@ -285,7 +285,7 @@ const BUILTIN_PERSONAS = {
       },
       {
         card_id: 'alexey-card-2',
-        signal_type: 'OPERATIONS_OVERLOAD',
+        signal_type: 'operations_overload',
         heat: 'hot',
         outreach_window: '48 часов',
         contact: { name: 'Алексей Громов', title: 'CEO / Founder', linkedin: 'linkedin.com/in/alexey-gromov' },
@@ -316,7 +316,7 @@ const BUILTIN_PERSONAS = {
     cards: [
       {
         card_id: 'cfo-round-card-1',
-        signal_type: 'FUNDRAISING_DILIGENCE',
+        signal_type: 'fundraising_diligence',
         heat: 'hot',
         outreach_window: '30 дней',
         contact: { name: 'Sofia Brenner', title: 'CFO', linkedin: 'linkedin.com/in/sofia-brenner-finance' },
@@ -337,7 +337,7 @@ const BUILTIN_PERSONAS = {
       },
       {
         card_id: 'cfo-round-card-2',
-        signal_type: 'COMPLIANCE_PRESSURE',
+        signal_type: 'compliance_pressure',
         heat: 'hot',
         outreach_window: '10 дней',
         contact: { name: 'Sofia Brenner', title: 'CFO', linkedin: 'linkedin.com/in/sofia-brenner-finance' },
@@ -368,7 +368,7 @@ const BUILTIN_PERSONAS = {
     cards: [
       {
         card_id: 'eng-manager-card-1',
-        signal_type: 'TEAM_SCALING',
+        signal_type: 'team_scaling',
         heat: 'warm',
         outreach_window: '10 дней',
         contact: { name: 'Mark Levin', title: 'Engineering Manager', linkedin: 'linkedin.com/in/mark-levin-eng' },
@@ -399,7 +399,7 @@ const BUILTIN_PERSONAS = {
     cards: [
       {
         card_id: 'ops-manager-card-1',
-        signal_type: 'OPERATIONS_OVERLOAD',
+        signal_type: 'operations_overload',
         heat: 'hot',
         outreach_window: '14 дней',
         contact: { name: 'Ирина Коваль', title: 'Operations Manager', linkedin: 'linkedin.com/in/irina-koval-ops' },
@@ -420,7 +420,7 @@ const BUILTIN_PERSONAS = {
       },
       {
         card_id: 'ops-manager-card-2',
-        signal_type: 'FINANCE_CONTROL_GAP',
+        signal_type: 'finance_control_gap',
         heat: 'warm',
         outreach_window: '14 дней',
         contact: { name: 'Ирина Коваль', title: 'Operations Manager', linkedin: 'linkedin.com/in/irina-koval-ops' },
@@ -451,7 +451,7 @@ const BUILTIN_PERSONAS = {
     cards: [
       {
         card_id: 'head-finance-card-1',
-        signal_type: 'FINANCE_CONTROL_GAP',
+        signal_type: 'finance_control_gap',
         heat: 'warm',
         outreach_window: '21 день',
         contact: { name: 'Elena Martin', title: 'Head of Finance', linkedin: 'linkedin.com/in/elena-martin-finance' },
@@ -472,7 +472,7 @@ const BUILTIN_PERSONAS = {
       },
       {
         card_id: 'head-finance-card-2',
-        signal_type: 'FUNDRAISING_DILIGENCE',
+        signal_type: 'fundraising_diligence',
         heat: 'hot',
         outreach_window: '14 дней',
         contact: { name: 'Elena Martin', title: 'Head of Finance', linkedin: 'linkedin.com/in/elena-martin-finance' },
@@ -503,7 +503,7 @@ const BUILTIN_PERSONAS = {
     cards: [
       {
         card_id: 'internal-legal-card-1',
-        signal_type: 'LEGAL_REVIEW_TRIGGER',
+        signal_type: 'legal_review_trigger',
         heat: 'warm',
         outreach_window: '14 дней',
         contact: { name: 'Anna Richter', title: 'Legal Counsel', linkedin: 'linkedin.com/in/anna-richter-legal' },
@@ -524,7 +524,7 @@ const BUILTIN_PERSONAS = {
       },
       {
         card_id: 'internal-legal-card-2',
-        signal_type: 'OUTSIDE_COUNSEL_CHECK',
+        signal_type: 'outside_counsel_check',
         heat: 'warm',
         outreach_window: '14 дней',
         contact: { name: 'Anna Richter', title: 'Legal Counsel', linkedin: 'linkedin.com/in/anna-richter-legal' },
@@ -555,7 +555,7 @@ const BUILTIN_PERSONAS = {
     cards: [
       {
         card_id: 'external-legal-card-1',
-        signal_type: 'OUTSIDE_COUNSEL_CHECK',
+        signal_type: 'outside_counsel_check',
         heat: 'hot',
         outreach_window: '7 дней',
         contact: { name: 'David Schmidt', title: 'Внешний юридический советник', linkedin: 'linkedin.com/in/david-schmidt-law' },
@@ -576,7 +576,7 @@ const BUILTIN_PERSONAS = {
       },
       {
         card_id: 'external-legal-card-2',
-        signal_type: 'LEGAL_REVIEW_TRIGGER',
+        signal_type: 'legal_review_trigger',
         heat: 'hot',
         outreach_window: '5 дней',
         contact: { name: 'David Schmidt', title: 'Внешний юридический советник', linkedin: 'linkedin.com/in/david-schmidt-law' },
@@ -750,7 +750,7 @@ function normalizeCard(card, personaId, index) {
   const contact = card?.contact || {};
   return {
     card_id: String(card?.card_id || fallbackId).trim() || fallbackId,
-    signal_type: String(card?.signal_type || 'PAIN_SIGNAL').trim() || 'PAIN_SIGNAL',
+    signal_type: String(card?.signal_type || 'pain_signal').trim() || 'pain_signal',
     heat: ['hot', 'warm', 'cold'].includes(String(card?.heat || '').toLowerCase()) ? String(card.heat).toLowerCase() : 'warm',
     outreach_window: String(card?.outreach_window || '7 дней').trim() || '7 дней',
     contact: {
@@ -2101,7 +2101,7 @@ function createSalesSession({ personaId, sellerId = 'pavel', dialogueType = 'mes
     : null;
   const normalizedRandomizerConfig = normalizeRandomizerConfig({
     ...(randomizerConfig || {}),
-    signal_types: normalizedScenarioSelection?.signal_type ? [String((doctrineConfig?.signal_types?.[normalizedScenarioSelection.signal_type]?.id || normalizedScenarioSelection.signal_type).toUpperCase())] : randomizerConfig?.signal_types,
+    signal_types: normalizedScenarioSelection?.signal_type ? [(doctrineConfig?.signal_types?.[normalizedScenarioSelection.signal_type]?.id || normalizedScenarioSelection.signal_type)] : randomizerConfig?.signal_types,
   });
   const card = pickCard(personaId, normalizedRandomizerConfig);
   const inferredLanguage = detectMessageLanguage([
