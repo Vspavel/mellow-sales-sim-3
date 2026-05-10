@@ -7904,11 +7904,17 @@ function respondOps(session, sellerText) {
     ]);
   }
   if (turn === 1 && persona.id === 'grey_pain_switcher') {
-    return pick([
-      'Это уже ближе. Теперь скажите через границы: что именно у вас в зоне ответственности, а где buyer всё ещё остаётся на своём риске?',
-      'Хорошо, но безопасность для меня теперь не абстракция. Как выглядит ваш clean process, если случается инцидент или вопрос от банка?',
-      'Ок. Тогда не обещания, а mechanics: кто у вас держит документы, payout flow, incident trail и где ваша граница заканчивается?',
-    ]);
+    return lang === 'ru'
+      ? pick([
+          'Это уже ближе. Теперь скажите через границы: что именно у вас в зоне ответственности, а где buyer всё ещё остаётся на своём риске?',
+          'Хорошо, но безопасность для меня теперь не абстракция. Как выглядит ваш clean process, если случается инцидент или вопрос от банка?',
+          'Ок. Тогда не обещания, а mechanics: кто у вас держит документы, payout flow, incident trail и где ваша граница заканчивается?',
+        ])
+      : pick([
+          'That is closer. Now give me the boundary: what exactly is in your scope, and where does the buyer still carry their own risk?',
+          'Ok. Safety is not abstract to me anymore. What does your clean process look like if there is an incident or a bank question?',
+          'Not promises — mechanics. Who holds the documents, payout flow, incident trail, and where does your scope end?',
+        ]);
   }
   if (turn === 1 && persona.id === 'direct_contract_transition') {
     return pick([
@@ -7964,11 +7970,17 @@ function respondOps(session, sellerText) {
       ]);
     }
     if (persona.id === 'grey_pain_switcher') {
-      return pick([
-        'После серого провайдера я больше не покупаю слово compliance. Чем вы реально безопаснее, а не просто дороже?',
-        'У нас уже была боль от небезопасной схемы. Кто у вас за что отвечает, если что-то идёт не так?',
-        'Мне нужен не compliance-слоган, а понятная граница ответственности. В чём она у вас?',
-      ]);
+      return lang === 'ru'
+        ? pick([
+            'После серого провайдера я больше не покупаю слово compliance. Чем вы реально безопаснее, а не просто дороже?',
+            'У нас уже была боль от небезопасной схемы. Кто у вас за что отвечает, если что-то идёт не так?',
+            'Мне нужен не compliance-слоган, а понятная граница ответственности. В чём она у вас?',
+          ])
+        : pick([
+            'After a grey provider, I no longer buy generic compliance claims. What actually makes you safer — not just more expensive?',
+            'We had real pain from an unsafe scheme. Who owns what when something goes wrong on your side?',
+            'I need a clear responsibility boundary, not a compliance slogan. What exactly is in your scope?',
+          ]);
     }
     if (persona.id === 'direct_contract_transition') {
       return pick([
@@ -10026,6 +10038,10 @@ function buildLlmSystemPrompt(session) {
   }
 
   fullSystem += `\n\n--- AVAILABLE SELLING ASSETS THE SELLER MAY USE ---\nCase snippet: ${assets.caseSnippet}\nStructured written proof asset: ${assets.writtenProof}\nCalculator asset: ${assets.calculator}\nUsage logic: case snippet works as narrow proof after a concrete concern appears; written proof works as a bounded next step; calculator is a review-stage or economics-stage asset, not an opening pitch. Do not reward asset-dumping. Reward precise use of one relevant asset at the right moment.`;
+
+  if (lang === 'en') {
+    fullSystem += '\n\nLANGUAGE: This conversation is in English. You MUST respond in English only.';
+  }
 
   return fullSystem;
 }
