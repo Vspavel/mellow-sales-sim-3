@@ -3178,7 +3178,7 @@ const SALES_ASSET_LIBRARY = {
     case_en: [
       'In a similar legal-trigger case, the discussion moved only once the responsibility boundary and audit trail became explainable without grey promises.',
     ],
-    proof_ru: 'Короткий boundary memo: документы, trail, зона Mellow, что остаётся у клиента.',
+    proof_ru: 'Короткая boundary memo: документы, trail, зона Mellow, что остаётся у клиента.',
     proof_en: 'A short boundary memo: documents, trail, Mellow scope, and what remains with the client.',
     calculator_ru: 'Calculator здесь вторичен, использовать только после того, как boundary и defensibility уже понятны.',
     calculator_en: 'Calculator is secondary here, use it only after boundary and defensibility are already clear.'
@@ -5687,6 +5687,7 @@ function buildHintRetrievalContext(session, lang = null) {
   const policy = getHintPolicyContext(session);
   const persona = personaMeta(session) || {};
   const sellerTurnIndex = sellerMessages(session).length + 1;
+  const effectiveLanguage = lang || session.language || 'en';
   return {
     persona_id: session.bot_id,
     persona_archetype: persona.archetype || '',
@@ -5699,7 +5700,7 @@ function buildHintRetrievalContext(session, lang = null) {
     bridge_step_type: policy.hintStage === 'bridge_step' || policy.hintStage === 'direct_ask' ? policy.askType : null,
     active_concern: getActiveConcern(session),
     signal_type: session?.sde_card?.signal_type || null,
-    hint_language: lang === 'ru' ? 'ru' : 'en',
+    hint_language: effectiveLanguage === 'ru' ? 'ru' : 'en',
     buyer_state: buyerStateSnapshot(session?.buyer_state || buildInitialBuyerState(session)),
     buyer_metrics: {
       reply_likelihood: Number(session?.buyer_state?.reply_likelihood || 0),
