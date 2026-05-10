@@ -2437,7 +2437,7 @@ function detectBuyerMeetingAcceptance(text, lang) {
   } else {
     // Explicit deferral / resistance — reject before checking positives.
     // Catches "Пока созвон рано" (too early), "не сейчас" (not now), etc.
-    if (/(рано|не\s+сейчас|не\s+готов|не\s+готова|пока\s+не|позже|подождите|для\s+начала)/.test(lower)) return false;
+    if (/(рано|не\s+сейчас|не\s+готов|не\s+готова|пока\s+не|подождите)/.test(lower)) return false;
 
     // Strong acceptance phrases. \b does not work for Cyrillic in JS (only matches ASCII
     // word chars), so we use space/punctuation anchors to simulate word boundaries.
