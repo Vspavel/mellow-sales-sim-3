@@ -378,19 +378,6 @@ function badgeClass(status) {
   return status === 'BLOCKER' ? 'blocker' : 'fail';
 }
 
-function signalTypeLabel(value) {
-  return {
-    COMPLIANCE_PRESSURE: 'Compliance check before legal review',
-    PAIN_SIGNAL: 'Operational payment failure',
-    FUNDRAISING_DILIGENCE: 'Post-round diligence preparation',
-    TEAM_SCALING: 'Team growth and payment overload',
-    OPERATIONS_OVERLOAD: 'Ops no longer coping manually',
-    FINANCE_CONTROL_GAP: 'Finance needs more control and explainability',
-    LEGAL_REVIEW_TRIGGER: 'Internal legal review of contractor process',
-    OUTSIDE_COUNSEL_CHECK: 'External counsel checking current scheme'
-  }[value] || value;
-}
-
 function heatLabel(value) {
   return {
     hot: 'Hot',
@@ -975,7 +962,7 @@ function renderRunSignalPanel() {
   }
 
   if (runSignalCard) runSignalCard.classList.remove('is-hidden');
-  if (runSignalBadge) runSignalBadge.textContent = signalTypeLabel(card.signal_type);
+  if (runSignalBadge) runSignalBadge.textContent = signalTypeOptionLabel(card.signal_type);
   const hasSellerTurns = (state.session?.transcript || []).some((m) => m.role === 'seller');
   const hintLine = !hasSellerTurns ? (card.first_touch_hint || card.probable_pain || '') : '';
   const chips = [heatLabel(card.heat), card.outreach_window].filter(Boolean);
@@ -2450,7 +2437,7 @@ async function selectPersona(personaId) {
         dialogueType: state.dialogueType,
         randomizerConfig: {
           ...state.randomizerConfig,
-          signal_types: state.selectedSignalType ? [state.selectedSignalType.toUpperCase()] : state.randomizerConfig.signal_types,
+          signal_types: state.selectedSignalType ? [state.selectedSignalType] : state.randomizerConfig.signal_types,
         },
         scenarioSelection: {
           side: state.selectedSide,
@@ -2480,7 +2467,7 @@ async function selectPersona(personaId) {
 
 function defaultNewCard() {
   return [{
-    signal_type: 'PAIN_SIGNAL',
+    signal_type: 'pain_signal',
     heat: 'warm',
     outreach_window: '7 days',
     contact: { name: 'New Contact', title: 'Decision maker', linkedin: '' },
@@ -3359,15 +3346,21 @@ function readInitialRoute() {
 // ── Randomizer settings ──────────────────────────────────────────────────────
 
 const ALL_SIGNAL_TYPES = [
-  'COMPLIANCE_PRESSURE', 'PAIN_SIGNAL', 'FUNDRAISING_DILIGENCE',
-  'TEAM_SCALING', 'OPERATIONS_OVERLOAD', 'FINANCE_CONTROL_GAP',
-  'LEGAL_REVIEW_TRIGGER', 'OUTSIDE_COUNSEL_CHECK'
+  'compliance_pressure', 'pain_signal', 'fundraising_diligence',
+  'team_scaling', 'operations_overload', 'finance_control_gap',
+  'legal_review_trigger', 'outside_counsel_check'
 ];
 
 function loadRandomizerConfig() {
   try {
     const raw = localStorage.getItem('mellow_randomizer_config');
-    if (raw) Object.assign(state.randomizerConfig, JSON.parse(raw));
+    if (raw) {
+      Object.assign(state.randomizerConfig, JSON.parse(raw));
+      // Migrate legacy UPPERCASE signal types to lowercase
+      if (state.randomizerConfig.signal_types) {
+        state.randomizerConfig.signal_types = state.randomizerConfig.signal_types.map(st => st.toLowerCase());
+      }
+    }
   } catch {}
 }
 
