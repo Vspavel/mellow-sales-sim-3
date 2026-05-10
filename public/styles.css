@@ -324,17 +324,7 @@ button:disabled { opacity: 0.45; cursor: default; }
 .required-fields-list li { display: flex; flex-direction: column; gap: 3px; font-size: 0.88rem; }
 .required-fields-list span { color: var(--muted); }
 
-/* Signal card */
-.signal-card { background: var(--surface-subtle); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px 18px; }
-.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(148px, 1fr)); gap: 10px; margin-bottom: 14px; }
-.meta-item { display: flex; flex-direction: column; gap: 3px; }
-.meta-item strong { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
-.detail-cols { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 24px; }
-.detail-section h3 { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 10px; }
-.detail-row { margin-bottom: 10px; }
-.detail-row strong { font-size: 0.72rem; color: var(--muted); display: block; }
-.detail-row span, .detail-row p, .context-note { font-size: 0.88rem; line-height: 1.5; }
-.dont-list { margin: 4px 0 0; padding-left: 16px; color: var(--muted); font-size: 0.88rem; line-height: 1.6; }
+/* Signal card — converted to bubble--system in MEL-1824; grid classes removed */
 
 /* Run panel — see Run page v3.1 section near end of file for the canonical
    selectors. The classes below are shared with non-Run surfaces (Analytics,

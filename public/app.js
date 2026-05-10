@@ -1960,28 +1960,45 @@ function setDialogueType(type, options = {}) {
 
 function renderSignalCard() {
   const { sde_card: card, bot_name } = state.session;
+  const ru = isLanguageRu();
+
+  const headline = (() => {
+    const raw = card?.rendered_text || card?.what_happened || '';
+    if (!raw) return '';
+    const dot = raw.indexOf('.');
+    return (dot > 0 && dot < 100 ? raw.slice(0, dot + 1) : raw.slice(0, 80)).trim();
+  })();
+
+  const chips = [
+    signalTypeOptionLabel(card.signal_type),
+    card.heat ? `Heat: ${heatLabel(card.heat)}` : '',
+    card.outreach_window ? `Window: ${card.outreach_window}` : '',
+  ].filter(Boolean);
+
+  const personaName = card.contact?.name ?? bot_name ?? '';
+  const personaTitle = card.contact?.title ?? '';
+  const personaLine = [personaName, personaTitle].filter(Boolean).join(' · ');
+  const companyLine = card.company?.name
+    ? `${card.company.name}${card.company.hq ? ` · ${card.company.hq}` : ''}`
+    : '';
+  const context = card.rendered_text || card.what_happened || '';
+  const eyebrow = ru ? 'Система · Бриф сигнала' : 'System · Signal briefing';
+  const contextLabel = ru ? 'Контекст' : 'Context';
+
   signalCard.innerHTML = `
-    <div class="meta-grid">
-      <div class="meta-item"><strong>Persona</strong><span>${escapeHtml(bot_name)}</span></div>
-      <div class="meta-item"><strong>Signal</strong><span>${escapeHtml(signalTypeLabel(card.signal_type))}</span></div>
-      <div class="meta-item"><strong>Outreach window</strong><span>${escapeHtml(card.outreach_window)}</span></div>
-      <div class="meta-item"><strong>Heat</strong><span>${escapeHtml(heatLabel(card.heat))}</span></div>
-    </div>
-    <div class="detail-cols">
-      <div class="detail-section">
-        <h3>Context</h3>
-        <div class="detail-row"><strong>What happened</strong><span>${escapeHtml(card.what_happened)}</span></div>
-        <div class="detail-row"><strong>Probable pain</strong><span>${escapeHtml(card.probable_pain)}</span></div>
-        <div class="detail-row"><strong>First touch hint</strong><span>${escapeHtml(card.first_touch_hint)}</span></div>
-        <p class="context-note">${escapeHtml(card.rendered_text)}</p>
-      </div>
-      <div class="detail-section">
-        <h3>Boundaries</h3>
-        <div class="detail-row"><strong>Company</strong><span>${escapeHtml(card.company.name)}, ${escapeHtml(card.company.industry)}, ${escapeHtml(card.company.size)}</span></div>
-        <div class="detail-row"><strong>Channel</strong><span>${escapeHtml(card.recommended_channel)}</span></div>
-        <div class="detail-row"><strong>Don't do</strong><ul class="dont-list">${(card.dont_do || []).map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul></div>
-      </div>
-    </div>
+    <section class="bubble bubble--system" role="region" aria-label="${escapeHtml(ru ? 'Бриф сигнала' : 'Signal briefing')}">
+      <p class="bubble--system__eyebrow">${escapeHtml(eyebrow)}</p>
+      ${headline ? `<h2 class="bubble--system__headline">${escapeHtml(headline)}</h2>` : ''}
+      ${chips.length ? `<div class="bubble--system__chips">${chips.map((c) => `<span class="run-signal-pill">${escapeHtml(c)}</span>`).join('')}</div>` : ''}
+      ${personaLine ? `<p class="bubble--system__persona-title">${escapeHtml(personaLine)}</p>` : ''}
+      ${companyLine ? `<p class="bubble--system__persona-essence muted">${escapeHtml(companyLine)}</p>` : ''}
+      ${context ? `
+        <div class="bubble--system__opener">
+          <p class="bubble--system__opener-label">${escapeHtml(contextLabel)}</p>
+          <p class="bubble--system__opener-text">${escapeHtml(context)}</p>
+        </div>
+      ` : ''}
+    </section>
   `;
 }
 
