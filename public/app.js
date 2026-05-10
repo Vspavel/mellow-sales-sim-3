@@ -193,9 +193,7 @@ const downloadResultBtn = document.getElementById('downloadResultBtn');
 const copyShareLinkBtn = document.getElementById('copyShareLinkBtn');
 const appVersion = document.getElementById('appVersion');
 const settingsPanelTitle = document.getElementById('settingsPanelTitle');
-const settingsModeDoctrineBtn = document.getElementById('settingsModeDoctrine');
-const settingsModeSignalBtn = document.getElementById('settingsModeSignal');
-const settingsModePersonaBtn = document.getElementById('settingsModePersona');
+
 const settingsLayerField = document.getElementById('settingsLayerField');
 const settingsLayerSelect = document.getElementById('settingsLayerSelect');
 const settingsRecordList = document.getElementById('settingsRecordList');
@@ -2568,9 +2566,7 @@ function setSettingsMode(mode) {
   if (!meta.showLayerSelect) state.settingsLayer = meta.layer;
   state.settingsRecordId = '';
   settingsPanelTitle.textContent = meta.title;
-  settingsModeDoctrineBtn?.classList.toggle('is-active', state.settingsMode === 'doctrine');
-  settingsModeSignalBtn?.classList.toggle('is-active', state.settingsMode === 'signal');
-  settingsModePersonaBtn?.classList.toggle('is-active', state.settingsMode === 'persona');
+
   settingsLayerField?.classList.toggle('settings-layer-hidden', !meta.showLayerSelect);
   legacyDoctrineSettings?.classList.toggle('hidden', state.settingsMode !== 'persona');
   sliceWorkbench?.classList.toggle('hidden', state.settingsMode === 'persona');
@@ -2814,9 +2810,7 @@ function openSettingsSurface(mode) {
 openDoctrineSettingsBtn?.addEventListener('click', () => openSettingsSurface('doctrine'));
 openSignalSettingsBtn?.addEventListener('click', () => openSettingsSurface('signal'));
 openPersonaSettingsBtn?.addEventListener('click', () => openSettingsSurface('persona'));
-settingsModeDoctrineBtn?.addEventListener('click', () => setSettingsMode('doctrine'));
-settingsModeSignalBtn?.addEventListener('click', () => setSettingsMode('signal'));
-settingsModePersonaBtn?.addEventListener('click', () => setSettingsMode('persona'));
+
 settingsLayerSelect?.addEventListener('change', () => {
   state.settingsLayer = settingsLayerSelect.value;
   state.settingsRecordId = '';
