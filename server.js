@@ -2164,7 +2164,7 @@ function createSalesSession({ personaId, sellerId = 'pavel', dialogueType = 'mes
 }
 
 async function commitAutoMessageTurn(session) {
-  const contrastiveSnapshot = buildHintMemorySnapshot(session);
+  const contrastiveSnapshot = buildHintMemorySnapshot(session, session.language);
   const explorationStrategy = pickExplorationStrategy();
   const sellerText = await generateSellerSuggestion(session, null, contrastiveSnapshot, explorationStrategy);
   const hintAttempt = createHintMemoryAttempt(session, sellerText, null, 'auto', contrastiveSnapshot, explorationStrategy);
@@ -5904,7 +5904,7 @@ function memoryScoreCandidate(text, records = [], direction = 1) {
 function chooseMemoryInformedCandidate(session, candidates = [], fallback = '', snapshot = null) {
   const cleaned = candidates.map((candidate) => String(candidate || '').trim()).filter(Boolean);
   if (!cleaned.length) return fallback;
-  const mem = snapshot || buildHintMemorySnapshot(session);
+  const mem = snapshot || buildHintMemorySnapshot(session, session.language);
   const ranked = cleaned.map((candidate) => ({
     candidate,
     score: memoryScoreCandidate(candidate, mem.successful, 1)
