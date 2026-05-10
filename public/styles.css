@@ -1005,21 +1005,23 @@ button:disabled { opacity: 0.45; cursor: default; }
   line-height: 1.35;
   font-weight: 500;
   color: var(--text);
-  margin: 0 0 4px;
+  margin: 0 0 2px;
 }
-.bubble--system__chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 4px; }
+.bubble--system__chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 2px; }
 .bubble--system__chips .run-signal-pill { background: var(--surface); border: 1px solid var(--border); color: var(--text); font-size: 0.75rem; padding: 3px 8px; min-height: 0; }
-.bubble--system__persona-title { font-size: 0.85rem; font-weight: 600; color: var(--text); margin: 0; }
+.bubble--system__meta { font-size: 0.82rem; font-weight: 600; color: var(--text); margin: 0 0 1px; }
 .bubble--system__persona-essence { font-size: 0.8rem; line-height: 1.4; margin: 0; }
+.bubble--system__channel { font-size: 0.75rem; line-height: 1.3; margin: 3px 0 0; }
 .bubble--system__opener {
-  margin-top: 6px;
+  margin-top: 4px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
-.bubble--system__opener-label { font-size: 0.68rem; font-weight: 600; color: var(--muted); margin: 0; }
+.bubble--system__opener-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.bubble--system__opener-label { font-size: 0.68rem; font-weight: 600; color: var(--muted); }
 .bubble--system__opener-text { font-size: 0.88rem; line-height: 1.55; color: var(--text); margin: 0; }
-.bubble--system__use-draft { align-self: flex-start; margin-top: 2px; padding: 4px 10px; font-size: 0.78rem; }
+.bubble--system__use-draft { flex-shrink: 0; padding: 3px 9px; font-size: 0.75rem; }
 
 .bubble--system__skeleton { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
 .bubble--system__skeleton-line { display: block; height: 14px; border-radius: 6px; background: linear-gradient(90deg, var(--border) 0%, var(--surface) 50%, var(--border) 100%); background-size: 200% 100%; animation: shimmer 1.6s linear infinite; }
