@@ -33,7 +33,7 @@ async function get(path) {
 }
 
 async function runSession(personaId, index) {
-  const session = await post('/api/sessions', { personaId });
+  const session = await post('/api/sessions', { personaId, language: 'ru' });
   const id = session.session_id;
   let meetingBooked = false;
 
