@@ -1125,13 +1125,22 @@ function buildSystemSignalCopy(card, persona) {
   const companyLine = card?.company?.name
     ? `${card.company.name}${card.company.hq ? ` · ${card.company.hq}` : ''}`
     : '';
+  const channel = card?.recommended_channel || '';
+  const dontDo = Array.isArray(card?.dont_do) ? card.dont_do[0] : (card?.dont_do || '');
+  const channelLine = [
+    channel ? (ru ? `Канал: ${channel}` : `Channel: ${channel}`) : '',
+    dontDo ? (ru ? `Не: ${dontDo}` : `Don't: ${dontDo}`) : '',
+  ].filter(Boolean).join(' · ');
   return {
     eyebrow: ru ? 'Система · Бриф сигнала' : 'System · Signal briefing',
     headline,
     chips: [signalLabel, heatChip, windowChip].filter(Boolean),
-    personaTitle: [personaName, personaRole].filter(Boolean).join(' · '),
+    metaLine: [
+      [personaName, personaRole].filter(Boolean).join(' · '),
+      companyLine,
+    ].filter(Boolean).join(' — '),
     personaEssence,
-    companyLine,
+    channelLine,
     openerLabel: ru ? 'Как начать' : 'Suggested opener',
     opener: card?.first_touch_hint || buildFirstTouchFallback(card, persona, ru),
     useDraftLabel: ru ? 'В черновик' : 'Use as draft',
@@ -1188,16 +1197,18 @@ function renderSystemSignalBubble() {
     <p class="bubble--system__eyebrow">${escapeHtml(copy.eyebrow)}</p>
     <h2 class="bubble--system__headline">${escapeHtml(copy.headline)}</h2>
     ${copy.chips.length ? `<div class="bubble--system__chips">${copy.chips.map((c) => `<span class="run-signal-pill">${escapeHtml(c)}</span>`).join('')}</div>` : ''}
-    ${copy.personaTitle ? `<p class="bubble--system__persona-title">${escapeHtml(copy.personaTitle)}</p>` : ''}
+    ${copy.metaLine ? `<p class="bubble--system__meta">${escapeHtml(copy.metaLine)}</p>` : ''}
     ${copy.personaEssence ? `<p class="bubble--system__persona-essence muted">${escapeHtml(copy.personaEssence)}</p>` : ''}
-    ${copy.companyLine ? `<p class="bubble--system__persona-essence muted">${escapeHtml(copy.companyLine)}</p>` : ''}
     ${copy.opener ? `
       <div class="bubble--system__opener">
-        <p class="bubble--system__opener-label">${escapeHtml(copy.openerLabel)}</p>
+        <div class="bubble--system__opener-head">
+          <span class="bubble--system__opener-label">${escapeHtml(copy.openerLabel)}</span>
+          <button type="button" class="ghost-btn bubble--system__use-draft" data-action="use-as-draft" data-draft="${escapeHtml(copy.opener)}">${escapeHtml(copy.useDraftLabel)}</button>
+        </div>
         <p class="bubble--system__opener-text">${escapeHtml(copy.opener)}</p>
-        <button type="button" class="ghost-btn bubble--system__use-draft" data-action="use-as-draft" data-draft="${escapeHtml(copy.opener)}">${escapeHtml(copy.useDraftLabel)}</button>
       </div>
     ` : ''}
+    ${copy.channelLine ? `<p class="bubble--system__channel muted">${escapeHtml(copy.channelLine)}</p>` : ''}
   `;
   return wrap;
 }
@@ -1974,10 +1985,19 @@ function renderSignalCard() {
 
   const personaName = card.contact?.name ?? bot_name ?? '';
   const personaTitle = card.contact?.title ?? '';
-  const personaLine = [personaName, personaTitle].filter(Boolean).join(' · ');
   const companyLine = card.company?.name
     ? `${card.company.name}${card.company.hq ? ` · ${card.company.hq}` : ''}`
     : '';
+  const metaLine = [
+    [personaName, personaTitle].filter(Boolean).join(' · '),
+    companyLine,
+  ].filter(Boolean).join(' — ');
+  const channel = card?.recommended_channel || '';
+  const dontDo = Array.isArray(card?.dont_do) ? card.dont_do[0] : (card?.dont_do || '');
+  const channelLine = [
+    channel ? (ru ? `Канал: ${channel}` : `Channel: ${channel}`) : '',
+    dontDo ? (ru ? `Не: ${dontDo}` : `Don't: ${dontDo}`) : '',
+  ].filter(Boolean).join(' · ');
   const context = card.rendered_text || card.what_happened || '';
   const eyebrow = ru ? 'Система · Бриф сигнала' : 'System · Signal briefing';
   const contextLabel = ru ? 'Контекст' : 'Context';
@@ -1987,14 +2007,14 @@ function renderSignalCard() {
       <p class="bubble--system__eyebrow">${escapeHtml(eyebrow)}</p>
       ${headline ? `<h2 class="bubble--system__headline">${escapeHtml(headline)}</h2>` : ''}
       ${chips.length ? `<div class="bubble--system__chips">${chips.map((c) => `<span class="run-signal-pill">${escapeHtml(c)}</span>`).join('')}</div>` : ''}
-      ${personaLine ? `<p class="bubble--system__persona-title">${escapeHtml(personaLine)}</p>` : ''}
-      ${companyLine ? `<p class="bubble--system__persona-essence muted">${escapeHtml(companyLine)}</p>` : ''}
+      ${metaLine ? `<p class="bubble--system__meta">${escapeHtml(metaLine)}</p>` : ''}
       ${context ? `
         <div class="bubble--system__opener">
           <p class="bubble--system__opener-label">${escapeHtml(contextLabel)}</p>
           <p class="bubble--system__opener-text">${escapeHtml(context)}</p>
         </div>
       ` : ''}
+      ${channelLine ? `<p class="bubble--system__channel muted">${escapeHtml(channelLine)}</p>` : ''}
     </section>
   `;
 }
