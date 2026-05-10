@@ -57,7 +57,7 @@ const HINT_MEMORY_MAX_RECORDS = 600;
 const HINT_MEMORY_RETRIEVAL_WINDOW = 240;
 const HINT_MEMORY_MAX_SUCCESS = 3;
 const HINT_MEMORY_MAX_FAILURE = 2;
-const HINT_RECENCY_MAX = 8;
+const HINT_RECENCY_MAX = 18;
 const UCB_C = Number(process.env.HINT_UCB_C ?? 1.0);
 const MAX_DIALOGUE_MESSAGES = 30;
 const ANALYTICS_BASELINE_RESET_AT = Date.parse('2026-04-26T05:29:00.000Z');
@@ -2437,7 +2437,7 @@ function detectBuyerMeetingAcceptance(text, lang) {
   } else {
     // Explicit deferral / resistance — reject before checking positives.
     // Catches "Пока созвон рано" (too early), "не сейчас" (not now), etc.
-    if (/(рано|не\s+сейчас|не\s+готов|не\s+готова|пока\s+не|позже|подождите|пришлите\s+материал|отправьте\s+материал|для\s+начала)/.test(lower)) return false;
+    if (/(рано|не\s+сейчас|не\s+готов|не\s+готова|пока\s+не|позже|подождите|для\s+начала)/.test(lower)) return false;
 
     // Strong acceptance phrases. \b does not work for Cyrillic in JS (only matches ASCII
     // word chars), so we use space/punctuation anchors to simulate word boundaries.
@@ -5754,10 +5754,25 @@ function retrieveRelevantHintMemories(session, lang = null) {
     .sort((a, b) => b.score - a.score)
     .slice(0, HINT_MEMORY_RETRIEVAL_WINDOW);
 
-  const successful = ranked
-    .filter((item) => item.record.final_normalized_score >= 0.15 || item.record.meeting_progress)
-    .slice(0, HINT_MEMORY_MAX_SUCCESS)
-    .map((item) => ({ ...summarizeHintMemoryRecord(item.record), score: item.score }));
+  const successfulCandidates = ranked
+    .filter((item) => item.record.final_normalized_score >= 0.15 || item.record.meeting_progress);
+  const successful = [];
+  for (const item of successfulCandidates) {
+    if (successful.length >= HINT_MEMORY_MAX_SUCCESS) break;
+    const candidatePatterns = Array.isArray(item.record.patterns) && item.record.patterns.length
+      ? item.record.patterns
+      : hintPatterns(item.record.generated_hint || '');
+    const isDuplicate = successful.some((sel) => {
+      const selPatterns = sel.patterns || [];
+      if (!candidatePatterns.length && !selPatterns.length) return false;
+      const intersection = candidatePatterns.filter((p) => selPatterns.includes(p)).length;
+      const union = new Set([...candidatePatterns, ...selPatterns]).size;
+      return union > 0 && intersection / union > 0.5;
+    });
+    if (!isDuplicate) {
+      successful.push({ ...summarizeHintMemoryRecord(item.record), score: item.score });
+    }
+  }
 
   const unsuccessful = ranked
     .filter((item) => item.record.final_normalized_score <= -0.12 || ['weak', 'failed'].includes(item.record.outcome_label))
