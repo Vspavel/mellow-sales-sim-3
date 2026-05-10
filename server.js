@@ -212,7 +212,7 @@ const BUILTIN_PERSONAS = {
     cards: [
       {
         card_id: 'andrey-card-1',
-        signal_type: 'COMPLIANCE_PRESSURE',
+        signal_type: 'compliance_pressure',
         heat: 'hot',
         outreach_window: '48 часов',
         contact: { name: 'Андрей Волков', title: 'CFO', linkedin: 'linkedin.com/in/andrey-volkov' },
@@ -224,7 +224,7 @@ const BUILTIN_PERSONAS = {
           'Скоро внешняя юридическая проверка схемы работы с подрядчиками и выплатами'
         ],
         target_profile: 'A',
-        probable_pain: 'Сочетание санкционного и налогового риска с ручной перегрузкой внутри finance.',
+        probable_pain: 'Сочетание санкционного и налогового риска с ручной перегрузкой финансового блока.',
         recommended_product: 'CoR',
         recommended_channel: 'LinkedIn',
         first_touch_hint: 'Заходи через зависший платёж и предстоящую юридическую проверку, не обещай волшебного снятия комплаенс-рисков.',
@@ -233,7 +233,7 @@ const BUILTIN_PERSONAS = {
       },
       {
         card_id: 'andrey-card-2',
-        signal_type: 'FUNDRAISING_DILIGENCE',
+        signal_type: 'fundraising_diligence',
         heat: 'warm',
         outreach_window: '3 недели',
         contact: { name: 'Андрей Волков', title: 'CFO', linkedin: 'linkedin.com/in/andrey-volkov' },
@@ -249,7 +249,7 @@ const BUILTIN_PERSONAS = {
         recommended_product: 'CoR',
         recommended_channel: 'LinkedIn',
         first_touch_hint: 'Заходи через готовность к проверке инвесторов и управляемость схемы, а не через общий комплаенс-нарратив.',
-        dont_do: ['Не обещай снять legal risk целиком', 'Не говори как с операционным менеджером'],
+        dont_do: ['Не обещай снять юридический риск целиком', 'Не говори как с операционным менеджером'],
         rendered_text: 'Сигнал: у Stellarpath совет директоров поставил задачу привести схему работы с подрядчиками в порядок до Series B. CFO видит риски в географически смешанной структуре и частичных выплатах через личные счета.'
       }
     ]
@@ -264,7 +264,7 @@ const BUILTIN_PERSONAS = {
     cards: [
       {
         card_id: 'alexey-card-1',
-        signal_type: 'PAIN_SIGNAL',
+        signal_type: 'pain_signal',
         heat: 'warm',
         outreach_window: '72 часа',
         contact: { name: 'Алексей Громов', title: 'CEO / Founder', linkedin: 'linkedin.com/in/alexey-gromov' },
@@ -276,16 +276,16 @@ const BUILTIN_PERSONAS = {
           'Главная боль: бардак, задержки, ручная возня, а не legal detail'
         ],
         target_profile: 'B',
-        probable_pain: 'Операционный friction и потеря времени команды',
+        probable_pain: 'Операционные трудности и потеря времени команды',
         recommended_product: 'CM',
         recommended_channel: 'email',
         first_touch_hint: 'Продавай операционный апгрейд, а не страх.',
         dont_do: ['Не душни compliance-нарративом', 'Не пиши длинно', 'Не используй маркетинговые клише'],
-        rendered_text: 'Сигнал: у OrbitFlow растёт распределённая команда подрядчиков, а ops уже тонет в задержках выплат и ручной координации через Wise / crypto. Founder ценит скорость и не любит тяжёлые sales-процессы.'
+        rendered_text: 'Сигнал: у OrbitFlow растёт распределённая команда подрядчиков, а операционный контур уже тонет в задержках выплат и ручной координации через Wise и крипто. Основатель ценит скорость и не любит тяжёлые процессы продаж.'
       },
       {
         card_id: 'alexey-card-2',
-        signal_type: 'OPERATIONS_OVERLOAD',
+        signal_type: 'operations_overload',
         heat: 'hot',
         outreach_window: '48 часов',
         contact: { name: 'Алексей Громов', title: 'CEO / Founder', linkedin: 'linkedin.com/in/alexey-gromov' },
@@ -301,7 +301,7 @@ const BUILTIN_PERSONAS = {
         recommended_product: 'CM',
         recommended_channel: 'email',
         first_touch_hint: 'Говори про скорость и снятие ручной нагрузки, а не про комплаенс. Конкретно: сколько каналов уберёт и сколько часов вернёт.',
-        dont_do: ['Не начинай с legal framing', 'Не пиши длинно', 'Не обещай compliance-волшебства'],
+        dont_do: ['Не начинай с юридического фрейма', 'Не пиши длинно', 'Не обещай комплаенс-волшебства'],
         rendered_text: 'Сигнал: у PatchStack быстрый рост привёл к операционному хаосу с выплатами, 4 разным каналам и постоянным задержкам. Founder лично занимается эскалациями и уже ищет способ убрать это из своего фокуса.'
       }
     ]
@@ -316,7 +316,7 @@ const BUILTIN_PERSONAS = {
     cards: [
       {
         card_id: 'cfo-round-card-1',
-        signal_type: 'FUNDRAISING_DILIGENCE',
+        signal_type: 'fundraising_diligence',
         heat: 'hot',
         outreach_window: '30 дней',
         contact: { name: 'Sofia Brenner', title: 'CFO', linkedin: 'linkedin.com/in/sofia-brenner-finance' },
@@ -337,7 +337,7 @@ const BUILTIN_PERSONAS = {
       },
       {
         card_id: 'cfo-round-card-2',
-        signal_type: 'COMPLIANCE_PRESSURE',
+        signal_type: 'compliance_pressure',
         heat: 'hot',
         outreach_window: '10 дней',
         contact: { name: 'Sofia Brenner', title: 'CFO', linkedin: 'linkedin.com/in/sofia-brenner-finance' },
@@ -353,7 +353,7 @@ const BUILTIN_PERSONAS = {
         recommended_product: 'CoR',
         recommended_channel: 'LinkedIn + email',
         first_touch_hint: 'Заходи через давление инвестора и сжатые сроки, это не внутренняя уборка, а подготовка к проверке сверху.',
-        dont_do: ['Не затягивай вступление', 'Не уходи в общий compliance pitch'],
+        dont_do: ['Не затягивай вступление', 'Не уходи в общий комплаенс-питч'],
         rendered_text: 'Сигнал: после Series A у Liftwave ведущий инвестор запросил более чистый контроль подрядчиков. CFO под давлением привести схему в порядок до следующего квартального разбора.'
       }
     ]
@@ -368,7 +368,7 @@ const BUILTIN_PERSONAS = {
     cards: [
       {
         card_id: 'eng-manager-card-1',
-        signal_type: 'TEAM_SCALING',
+        signal_type: 'team_scaling',
         heat: 'warm',
         outreach_window: '10 дней',
         contact: { name: 'Mark Levin', title: 'Engineering Manager', linkedin: 'linkedin.com/in/mark-levin-eng' },
@@ -383,9 +383,9 @@ const BUILTIN_PERSONAS = {
         probable_pain: 'Команда теряет фокус, а manager становится ручным эскалационным слоем',
         recommended_product: 'CM',
         recommended_channel: 'LinkedIn',
-        first_touch_hint: 'Покажи, как убрать ручные эскалации и дать champion сильный internal case.',
-        dont_do: ['Не разговаривай как с CFO', 'Не навязывай тяжёлый compliance-нарратив'],
-        rendered_text: 'Сигнал: у Docklane engineering manager уже не первый раз гасит раздражение подрядчиков из-за выплат. Если увидит реальный operational relief, может стать внутренним champion и занести разговор в finance.'
+        first_touch_hint: 'Покажи, как убрать ручные эскалации и дать внутреннему сторонику сильный аргумент для финансов.',
+        dont_do: ['Не разговаривай как с CFO', 'Не навязывай тяжёлый комплаенс-нарратив'],
+        rendered_text: 'Сигнал: у Docklane инженерный менеджер уже не первый раз гасит раздражение подрядчиков из-за выплат. Если увидит реальную операционную разгрузку, может стать внутренним сторонником и занести разговор в финансы.'
       }
     ]
   },
@@ -399,7 +399,7 @@ const BUILTIN_PERSONAS = {
     cards: [
       {
         card_id: 'ops-manager-card-1',
-        signal_type: 'OPERATIONS_OVERLOAD',
+        signal_type: 'operations_overload',
         heat: 'hot',
         outreach_window: '14 дней',
         contact: { name: 'Ирина Коваль', title: 'Operations Manager', linkedin: 'linkedin.com/in/irina-koval-ops' },
@@ -420,7 +420,7 @@ const BUILTIN_PERSONAS = {
       },
       {
         card_id: 'ops-manager-card-2',
-        signal_type: 'FINANCE_CONTROL_GAP',
+        signal_type: 'finance_control_gap',
         heat: 'warm',
         outreach_window: '14 дней',
         contact: { name: 'Ирина Коваль', title: 'Operations Manager', linkedin: 'linkedin.com/in/irina-koval-ops' },
@@ -435,9 +435,9 @@ const BUILTIN_PERSONAS = {
         probable_pain: 'Нет единого источника данных — любой запрос от finance превращается в ручную сборку',
         recommended_product: 'CM',
         recommended_channel: 'email',
-        first_touch_hint: 'Заходи через боль ручной отчётности. Для ops это должно занимать минуты, а не дни.',
-        dont_do: ['Не усложняй compliance-нарративом', 'Не пиши длинно'],
-        rendered_text: 'Сигнал: у TalentHub запрос из finance на детализацию выплат подрядчикам за квартал превратил ops в ручной сборочный цех на три дня. Главная боль в том, что нет единого источника данных и нормального процесса отчётности.'
+        first_touch_hint: 'Заходи через боль ручной отчётности. Для операционной команды это должно занимать минуты, а не дни.',
+        dont_do: ['Не усложняй комплаенс-нарративом', 'Не пиши длинно'],
+        rendered_text: 'Сигнал: у TalentHub запрос из финансов на детализацию выплат подрядчикам за квартал превратил операционную команду в ручной сборочный цех на три дня. Главная боль — нет единого источника данных и нормального процесса отчётности.'
       }
     ]
   },
@@ -451,7 +451,7 @@ const BUILTIN_PERSONAS = {
     cards: [
       {
         card_id: 'head-finance-card-1',
-        signal_type: 'FINANCE_CONTROL_GAP',
+        signal_type: 'finance_control_gap',
         heat: 'warm',
         outreach_window: '21 день',
         contact: { name: 'Elena Martin', title: 'Head of Finance', linkedin: 'linkedin.com/in/elena-martin-finance' },
@@ -472,7 +472,7 @@ const BUILTIN_PERSONAS = {
       },
       {
         card_id: 'head-finance-card-2',
-        signal_type: 'FUNDRAISING_DILIGENCE',
+        signal_type: 'fundraising_diligence',
         heat: 'hot',
         outreach_window: '14 дней',
         contact: { name: 'Elena Martin', title: 'Head of Finance', linkedin: 'linkedin.com/in/elena-martin-finance' },
@@ -503,7 +503,7 @@ const BUILTIN_PERSONAS = {
     cards: [
       {
         card_id: 'internal-legal-card-1',
-        signal_type: 'LEGAL_REVIEW_TRIGGER',
+        signal_type: 'legal_review_trigger',
         heat: 'warm',
         outreach_window: '14 дней',
         contact: { name: 'Anna Richter', title: 'Legal Counsel', linkedin: 'linkedin.com/in/anna-richter-legal' },
@@ -524,7 +524,7 @@ const BUILTIN_PERSONAS = {
       },
       {
         card_id: 'internal-legal-card-2',
-        signal_type: 'OUTSIDE_COUNSEL_CHECK',
+        signal_type: 'outside_counsel_check',
         heat: 'warm',
         outreach_window: '14 дней',
         contact: { name: 'Anna Richter', title: 'Legal Counsel', linkedin: 'linkedin.com/in/anna-richter-legal' },
@@ -540,7 +540,7 @@ const BUILTIN_PERSONAS = {
         recommended_product: 'CoR',
         recommended_channel: 'email',
         first_touch_hint: 'Говори про согласованность между юрисдикциями и прозрачный след операций, а не про отдельный кейс.',
-        dont_do: ['Не обещай legal certainty', 'Не заходи с ops-нарративом'],
+        dont_do: ['Не обещай юридической определённости', 'Не заходи с операционным нарративом'],
         rendered_text: 'Сигнал: у Meridian Cloud при расширении в ЕС юридическая функция нашла непоследовательную классификацию подрядчиков между юрисдикциями. Нужно привести всё в порядок до выхода на DE и FR.'
       }
     ]
@@ -555,7 +555,7 @@ const BUILTIN_PERSONAS = {
     cards: [
       {
         card_id: 'external-legal-card-1',
-        signal_type: 'OUTSIDE_COUNSEL_CHECK',
+        signal_type: 'outside_counsel_check',
         heat: 'hot',
         outreach_window: '7 дней',
         contact: { name: 'David Schmidt', title: 'Внешний юридический советник', linkedin: 'linkedin.com/in/david-schmidt-law' },
@@ -576,7 +576,7 @@ const BUILTIN_PERSONAS = {
       },
       {
         card_id: 'external-legal-card-2',
-        signal_type: 'LEGAL_REVIEW_TRIGGER',
+        signal_type: 'legal_review_trigger',
         heat: 'hot',
         outreach_window: '5 дней',
         contact: { name: 'David Schmidt', title: 'Внешний юридический советник', linkedin: 'linkedin.com/in/david-schmidt-law' },
@@ -750,7 +750,7 @@ function normalizeCard(card, personaId, index) {
   const contact = card?.contact || {};
   return {
     card_id: String(card?.card_id || fallbackId).trim() || fallbackId,
-    signal_type: String(card?.signal_type || 'PAIN_SIGNAL').trim() || 'PAIN_SIGNAL',
+    signal_type: String(card?.signal_type || 'pain_signal').trim() || 'pain_signal',
     heat: ['hot', 'warm', 'cold'].includes(String(card?.heat || '').toLowerCase()) ? String(card.heat).toLowerCase() : 'warm',
     outreach_window: String(card?.outreach_window || '7 дней').trim() || '7 дней',
     contact: {
@@ -2101,7 +2101,7 @@ function createSalesSession({ personaId, sellerId = 'pavel', dialogueType = 'mes
     : null;
   const normalizedRandomizerConfig = normalizeRandomizerConfig({
     ...(randomizerConfig || {}),
-    signal_types: normalizedScenarioSelection?.signal_type ? [String((doctrineConfig?.signal_types?.[normalizedScenarioSelection.signal_type]?.id || normalizedScenarioSelection.signal_type).toUpperCase())] : randomizerConfig?.signal_types,
+    signal_types: normalizedScenarioSelection?.signal_type ? [String(doctrineConfig?.signal_types?.[normalizedScenarioSelection.signal_type]?.id || normalizedScenarioSelection.signal_type)] : randomizerConfig?.signal_types,
   });
   const card = pickCard(personaId, normalizedRandomizerConfig);
   const inferredLanguage = detectMessageLanguage([
@@ -6240,115 +6240,115 @@ function randomId(prefix) {
 const signalVariantPresets = {
   COMPLIANCE_PRESSURE: [
     {
-      what: 'Во время internal finance review всплыли два зависших contractor payout и слишком длинная ручная сверка по документам.',
-      pain: 'Финансовый риск и ручной разбор исключений перед review.',
-      render: 'Сигнал: finance review вскрыл зависшие contractor payout и длинную ручную сверку документов. Разговор должен идти через контроль, explainability и снятие ручного слоя.'
+      what: 'Во время внутренней финансовой проверки всплыли два зависших платежа подрядчикам и слишком длинная ручная сверка документов.',
+      pain: 'Финансовый риск и ручной разбор исключений перед проверкой.',
+      render: 'Сигнал: финансовая проверка вскрыла зависшие выплаты подрядчикам и длинную ручную сверку документов. Заходить через контроль, объяснимость схемы и снятие ручного слоя.'
     },
     {
-      what: 'Новый controller эскалировал разрыв между payout-операциями и тем, что команда может быстро объяснить legal и leadership.',
-      pain: 'Слабая explainability схемы и растущая нагрузка на finance.',
-      render: 'Сигнал: новый controller увидел слабую explainability contractor flow и эскалировал вопрос до leadership. Контекст лучше открывать через control gap, а не общий fintech pitch.'
+      what: 'Новый финансовый контролёр эскалировал разрыв между операциями выплат и тем, что команда может быстро объяснить юристам и руководству.',
+      pain: 'Слабая объяснимость схемы и растущая нагрузка на финансовый блок.',
+      render: 'Сигнал: новый финансовый контролёр увидел слабую объяснимость схемы выплат и эскалировал вопрос до руководства. Контекст лучше открывать через разрыв в контроле, а не через общий финтех-питч.'
     },
     {
-      what: 'Перед внешним review finance команда обнаружила старые исключения по подрядчикам и слишком много ручных обходных маршрутов.',
-      pain: 'Серые зоны в payout flow и потеря контроля над исключениями.',
-      render: 'Сигнал: перед внешним review вскрылись старые исключения и ручные обходные маршруты. Нужен разговор про audit trail, контроль и границы ответственности.'
+      what: 'Перед внешней проверкой финансовая команда обнаружила старые исключения по подрядчикам и слишком много ручных обходных маршрутов.',
+      pain: 'Серые зоны в схеме выплат и потеря контроля над исключениями.',
+      render: 'Сигнал: перед внешней проверкой вскрылись старые исключения и ручные обходные маршруты. Нужен разговор про прозрачный след операций, контроль и границы ответственности.'
     }
   ],
   PAIN_SIGNAL: [
     {
-      what: 'Ops устал собирать статусы выплат по подрядчикам из чатов, почты и личных напоминаний.',
-      pain: 'Потеря скорости команды и постоянные ручные follow-ups.',
-      render: 'Сигнал: распределённая contractor-команда растёт, а ops уже тонет в статусах и ручных follow-ups. Заход должен быть коротким и operational-first.'
+      what: 'Операционная команда устала собирать статусы выплат подрядчикам из чатов, почты и личных напоминаний.',
+      pain: 'Потеря скорости команды и постоянные ручные напоминания.',
+      render: 'Сигнал: распределённая команда подрядчиков растёт, а операционный контур уже тонет в статусах и ручных напоминаниях. Заход — короткий и операционный, без длинного вступления.'
     },
     {
-      what: 'Founder получил жалобы от team leads, что выплаты подрядчикам снова приходится разруливать вручную через несколько инструментов.',
-      pain: 'Бардак в execution-слое и потеря времени ключевых людей.',
-      render: 'Сигнал: team leads жалуются на ручное разруливание выплат через несколько инструментов. Контекст держится на speed, predictability и снятии хаоса.'
+      what: 'Основатель получил жалобы от тимлидов, что выплаты подрядчикам снова приходится разруливать вручную через несколько инструментов.',
+      pain: 'Хаос в исполнительном слое и потеря времени ключевых людей.',
+      render: 'Сигнал: тимлиды жалуются на ручное разруливание выплат через несколько инструментов. Контекст держится на скорости, предсказуемости и снятии хаоса.'
     },
     {
-      what: 'После нового hiring wave менеджеры начали эскалировать непредсказуемость payout-statuses по новым подрядчикам.',
-      pain: 'Слабая predictability и лишняя координация внутри команды.',
-      render: 'Сигнал: после hiring wave всплыла непредсказуемость payout-statuses. Открывать разговор стоит через predictability и экономию времени, не через страх.'
+      what: 'После волны найма менеджеры начали эскалировать непредсказуемость статусов выплат по новым подрядчикам.',
+      pain: 'Слабая предсказуемость и лишняя координация внутри команды.',
+      render: 'Сигнал: после волны найма всплыла непредсказуемость статусов выплат. Открывать разговор стоит через предсказуемость и экономию времени, не через страх.'
     }
   ],
   FUNDRAISING_DILIGENCE: [
     {
-      what: 'После разговора с lead investor finance получила задачу быстро собрать explainable contractor flow до следующего board update.',
-      pain: 'Investor scrutiny усиливает pressure на control и explainability.',
-      render: 'Сигнал: investor pressure ускорил разбор contractor flow. Разговор должен идти через readiness к diligence, а не через общий compliance pitch.'
+      what: 'После разговора с ведущим инвестором финансовая команда получила задачу быстро собрать объяснимую схему работы с подрядчиками до следующего разбора с советом директоров.',
+      pain: 'Давление со стороны инвесторов усиливает требования к контролю и объяснимости.',
+      render: 'Сигнал: давление инвесторов ускорило разбор схемы работы с подрядчиками. Разговор — через готовность к проверке, а не через общий комплаенс-питч.'
     },
     {
-      what: 'Board попросил CFO показать, как текущая contractor scheme будет выглядеть под будущим diligence через 6-8 месяцев.',
+      what: 'Совет директоров попросил CFO показать, как текущая схема подрядчиков будет выглядеть на проверке инвесторов через 6–8 месяцев.',
       pain: 'Сейчас нет истории, которую можно уверенно показать на следующем раунде.',
-      render: 'Сигнал: board просит заранее подготовить contractor story к будущему diligence. Хороший заход идёт через explainability и control, не через страх.'
+      render: 'Сигнал: совет директоров заранее просит подготовить историю по подрядчикам к будущей проверке инвесторов. Хороший заход — через объяснимость и контроль, не через страх.'
     }
   ],
   TEAM_SCALING: [
     {
-      what: 'После очередной hiring wave engineering manager снова стал ручным эскалационным слоем между contractors, ops и finance.',
-      pain: 'Champion теряет время на firefighting вместо команды и delivery.',
-      render: 'Сигнал: engineering manager устал быть мостом между contractors и finance. Открывать разговор лучше через снятие эскалаций и internal champion case.'
+      what: 'После очередной волны найма инженерный менеджер снова стал ручным эскалационным слоем между подрядчиками, операционной командой и финансами.',
+      pain: 'Внутренний сторонник решения теряет время на тушение пожаров вместо команды и продукта.',
+      render: 'Сигнал: инженерный менеджер устал быть мостом между подрядчиками и финансовой командой. Открывать через снятие ручных эскалаций и аргумент для внутреннего продвижения решения.'
     },
     {
-      what: 'Новые external engineers начали чаще спрашивать про payout status, и engineering manager снова оказался в чужой операционной проблеме.',
-      pain: 'Команда отвлекается, а manager тратит доверие на не свою функцию.',
-      render: 'Сигнал: рост команды вытолкнул engineering manager в ops-firefighting. Лучший заход, это operational relief и stronger internal story.'
+      what: 'Новые внешние инженеры начали чаще спрашивать про статус выплат, и инженерный менеджер снова оказался в чужой операционной проблеме.',
+      pain: 'Команда отвлекается, а менеджер тратит доверие на не свою функцию.',
+      render: 'Сигнал: рост команды вытолкнул менеджера в операционные пожары. Лучший заход — операционная разгрузка и более сильная внутренняя история для продвижения.'
     }
   ],
   OPERATIONS_OVERLOAD: [
     {
-      what: 'Ops держит payout statuses в таблицах и чатах, а еженедельные follow-ups уже превратились в отдельный ритуал.',
-      pain: 'Слишком много ручной координации, мало predictability.',
-      render: 'Сигнал: ops живёт между таблицами, чатами и ручными follow-ups по выплатам. Разговор лучше открывать через predictability и removal of manual status work.'
+      what: 'Операционная команда держит статусы выплат в таблицах и чатах, а еженедельные напоминания уже превратились в отдельный ритуал.',
+      pain: 'Слишком много ручной координации, мало предсказуемости.',
+      render: 'Сигнал: операционная команда живёт между таблицами, чатами и ручными напоминаниями по выплатам. Разговор лучше открывать через предсказуемость и снятие ручного статусного слоя.'
     },
     {
-      what: 'После роста contractor team ops стала bottleneck для статусов и эскалаций по выплатам.',
+      what: 'После роста команды подрядчиков операционный контур стал узким местом для статусов и эскалаций по выплатам.',
       pain: 'Процесс больше не масштабируется руками.',
-      render: 'Сигнал: рост contractor-команды превратил ops в bottleneck для payouts. Рабочий заход, это конкретный process upgrade, а не большой pitch.'
+      render: 'Сигнал: рост команды подрядчиков превратил операционный контур в узкое место для выплат. Рабочий заход — конкретное улучшение процесса, а не большой питч.'
     }
   ],
   FINANCE_CONTROL_GAP: [
     {
-      what: 'Finance попросили за один день собрать полную картину contractor payments, а данные оказались размазаны по нескольким источникам.',
-      pain: 'Слабый контроль и тяжёлая explainability перед leadership.',
-      render: 'Сигнал: finance не может быстро собрать explainable picture по contractor payments. Разговор стоит держать на control, auditability и less manual reconciliation.'
+      what: 'Финансовую команду попросили за один день собрать полную картину выплат подрядчикам, а данные оказались размазаны по нескольким источникам.',
+      pain: 'Слабый контроль и тяжёлая объяснимость схемы перед руководством.',
+      render: 'Сигнал: финансовая команда не может быстро собрать объяснимую картину по выплатам подрядчикам. Разговор держать на контроле, проверяемости и сокращении ручной сверки.'
     },
     {
-      what: 'Перед annual audit finance снова вручную склеивает contractor docs, payout statuses и ответы для leadership.',
-      pain: 'Ручной reporting ломает доверие к процессу и забирает время команды.',
-      render: 'Сигнал: annual audit снова вскрыл ручной reporting по contractor flow. Лучший заход, это explainability вверх и сокращение ручной сверки вниз.'
+      what: 'Перед ежегодным аудитом финансовая команда снова вручную склеивает документы подрядчиков, статусы выплат и ответы для руководства.',
+      pain: 'Ручная отчётность ломает доверие к процессу и забирает время команды.',
+      render: 'Сигнал: ежегодный аудит снова вскрыл ручную отчётность по схеме выплат подрядчикам. Лучший заход — объяснимость для руководства и сокращение ручной сверки для команды.'
     }
   ],
   LEGAL_REVIEW_TRIGGER: [
     {
-      what: 'Internal legal увидел серые зоны между тем, как оформлены contractors, и тем, как реально идёт payout flow.',
-      pain: 'Слишком много grey zones и трудно защищаемых исключений.',
-      render: 'Сигнал: legal review вскрыл серые зоны между документами и payment flow. Открывать разговор лучше через boundaries, audit trail и no overclaiming.'
+      what: 'Внутренний юрист увидел серые зоны между тем, как оформлены подрядчики, и тем, как реально идёт схема выплат.',
+      pain: 'Слишком много серых зон и трудно защищаемых исключений.',
+      render: 'Сигнал: юридическая проверка вскрыла серые зоны между документами и схемой выплат. Открывать через границы ответственности, прозрачный след операций и без завышенных обещаний.'
     },
     {
-      what: 'При обновлении contractor templates legal поняла, что текущий payout process уже плохо бьётся с документами и исключениями.',
-      pain: 'Consistency между документами и процессом расползается.',
-      render: 'Сигнал: legal пересобирает contractor templates и упирается в inconsistent payout flow. Лучший заход, это process discipline и explainable scope.'
+      what: 'При обновлении шаблонов документов юридическая функция поняла, что текущая схема выплат уже плохо согласуется с документами и исключениями.',
+      pain: 'Согласованность между документами и процессом расползается.',
+      render: 'Сигнал: юридическая функция пересобирает шаблоны документов по подрядчикам и упирается в непоследовательную схему выплат. Лучший заход — дисциплина процесса и объяснимый периметр.'
     }
   ],
   OUTSIDE_COUNSEL_CHECK: [
     {
-      what: 'Внешний counsel быстро нашёл слабую traceability между intermediaries, документами и реальным contractor flow.',
-      pain: 'Недостаточная defensibility перед внешним review.',
-      render: 'Сигнал: external counsel увидел слабую traceability и много ручных слоёв в contractor flow. Разговор должен держаться на defensibility, scope boundary и evidence.'
+      what: 'Внешний советник быстро нашёл слабую прослеживаемость между посредниками, документами и реальной схемой выплат.',
+      pain: 'Недостаточная защищаемость схемы перед внешней проверкой.',
+      render: 'Сигнал: внешний советник увидел слабую прослеживаемость и много ручных слоёв в схеме с подрядчиками. Разговор держать на защищаемости схемы, границах периметра и конкретных доказательствах.'
     },
     {
-      what: 'Во время короткого outside counsel review всплыло, что текущая схема плохо объясняется без длинной устной расшифровки.',
+      what: 'Во время короткой внешней проверки выяснилось, что текущая схема плохо объясняется без длинной устной расшифровки.',
       pain: 'Схема слабо защищается без ручного контекста и устных пояснений.',
-      render: 'Сигнал: outside counsel review показал слабую explainability contractor scheme без ручных пояснений. Лучший заход, это exact scope, safeguards and audit trail.'
+      render: 'Сигнал: внешняя проверка показала слабую объяснимость схемы без ручных пояснений. Лучший заход — точный периметр, защитные механизмы и прозрачный след операций.'
     }
   ]
 };
 
 const signalHintVariants = [
-  'Открой через конкретный рабочий сигнал, не через общий pitch.',
-  'Начни с observed context и быстро приземли разговор в механику.',
+  'Открой через конкретный рабочий сигнал, а не через общий питч.',
+  'Начни с наблюдаемого контекста и быстро приземли разговор в механику.',
   'Сделай первый заход точным и коротким, без шаблонной подводки.'
 ];
 

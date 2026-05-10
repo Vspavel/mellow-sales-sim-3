@@ -2427,7 +2427,7 @@ async function selectPersona(personaId) {
         dialogueType: state.dialogueType,
         randomizerConfig: {
           ...state.randomizerConfig,
-          signal_types: state.selectedSignalType ? [state.selectedSignalType.toUpperCase()] : state.randomizerConfig.signal_types,
+          signal_types: state.selectedSignalType ? [state.selectedSignalType] : state.randomizerConfig.signal_types,
         },
         scenarioSelection: {
           side: state.selectedSide,
@@ -2457,7 +2457,7 @@ async function selectPersona(personaId) {
 
 function defaultNewCard() {
   return [{
-    signal_type: 'PAIN_SIGNAL',
+    signal_type: 'pain_signal',
     heat: 'warm',
     outreach_window: '7 days',
     contact: { name: 'New Contact', title: 'Decision maker', linkedin: '' },
@@ -3342,9 +3342,9 @@ function readInitialRoute() {
 // ── Randomizer settings ──────────────────────────────────────────────────────
 
 const ALL_SIGNAL_TYPES = [
-  'COMPLIANCE_PRESSURE', 'PAIN_SIGNAL', 'FUNDRAISING_DILIGENCE',
-  'TEAM_SCALING', 'OPERATIONS_OVERLOAD', 'FINANCE_CONTROL_GAP',
-  'LEGAL_REVIEW_TRIGGER', 'OUTSIDE_COUNSEL_CHECK'
+  'compliance_pressure', 'pain_signal', 'fundraising_diligence',
+  'team_scaling', 'operations_overload', 'finance_control_gap',
+  'legal_review_trigger', 'outside_counsel_check'
 ];
 
 function loadRandomizerConfig() {
