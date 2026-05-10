@@ -325,16 +325,27 @@ button:disabled { opacity: 0.45; cursor: default; }
 .required-fields-list span { color: var(--muted); }
 
 /* Signal card */
-.signal-card { background: var(--surface-subtle); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px 18px; }
+.signal-card { background: var(--surface-subtle); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; }
 .meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(148px, 1fr)); gap: 10px; margin-bottom: 14px; }
-.meta-item { display: flex; flex-direction: column; gap: 3px; }
+.signal-card .meta-grid { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-bottom: 10px; }
+.meta-item { display: flex; flex-direction: column; gap: 2px; }
 .meta-item strong { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
-.detail-cols { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 24px; }
-.detail-section h3 { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 10px; }
-.detail-row { margin-bottom: 10px; }
+.detail-cols { display: flex; flex-direction: column; gap: 0; }
+.detail-section { padding-bottom: 6px; }
+.detail-section + .detail-section { padding-top: 6px; border-top: 1px solid var(--border); }
+.detail-section h3 { display: none; }
+.detail-row { margin-bottom: 5px; }
 .detail-row strong { font-size: 0.72rem; color: var(--muted); display: block; }
 .detail-row span, .detail-row p, .context-note { font-size: 0.88rem; line-height: 1.5; }
+.signal-card .detail-row { margin-bottom: 3px; }
+.signal-card .detail-row strong { display: inline; font-weight: 600; }
+.signal-card .detail-row strong::after { content: ': '; }
+.signal-card .detail-row span { display: inline; line-height: 1.4; }
+.signal-card .context-note { font-size: 0.82rem; color: var(--muted); font-style: italic; margin-top: 5px; display: block; }
 .dont-list { margin: 4px 0 0; padding-left: 16px; color: var(--muted); font-size: 0.88rem; line-height: 1.6; }
+.signal-card .dont-list { display: inline; margin: 0; padding: 0; list-style: none; }
+.signal-card .dont-list li { display: inline; }
+.signal-card .dont-list li:not(:last-child)::after { content: '; '; }
 
 /* Run panel — see Run page v3.1 section near end of file for the canonical
    selectors. The classes below are shared with non-Run surfaces (Analytics,
