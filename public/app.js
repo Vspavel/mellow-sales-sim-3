@@ -382,16 +382,7 @@ function badgeClass(status) {
 }
 
 function signalTypeLabel(value) {
-  return {
-    COMPLIANCE_PRESSURE: 'Compliance check before legal review',
-    PAIN_SIGNAL: 'Operational payment failure',
-    FUNDRAISING_DILIGENCE: 'Post-round diligence preparation',
-    TEAM_SCALING: 'Team growth and payment overload',
-    OPERATIONS_OVERLOAD: 'Ops no longer coping manually',
-    FINANCE_CONTROL_GAP: 'Finance needs more control and explainability',
-    LEGAL_REVIEW_TRIGGER: 'Internal legal review of contractor process',
-    OUTSIDE_COUNSEL_CHECK: 'External counsel checking current scheme'
-  }[value] || value;
+  return signalTypeOptionLabel(value);
 }
 
 function heatLabel(value) {
