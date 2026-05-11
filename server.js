@@ -2181,11 +2181,12 @@ async function commitAutoMessageTurn(session) {
   sellerEntry.buyer_state_transition = transition;
   updateBehaviorState(session, sellerText);
   syncLegacyBehaviorState(session);
-  const reply = await generateBotReply(session, sellerText);
+  const replyResult = await generateBotReply(session, sellerText);
   updateSessionClaims(session, sellerText);
   session.meta.bot_turns += 1;
-  if (reply !== null) {
-    session.transcript.push({ role: 'bot', text: reply, ts: now() });
+  if (replyResult !== null) {
+    const reply = replyResult.reply;
+    session.transcript.push({ role: 'bot', text: reply, ts: now(), reply_source: replyResult.reply_source, override_reason: replyResult.override_reason });
     sellerEntry.buyer_reply_outcome = 'replied';
     applyBuyerAcceptanceOutcome(session, sellerEntry, reply);
   } else {
@@ -2193,7 +2194,7 @@ async function commitAutoMessageTurn(session) {
     session.meta.ghost_turns = (session.meta.ghost_turns || 0) + 1;
     sellerEntry.buyer_reply_outcome = 'silent';
   }
-  if (reply && !session.meta.meeting_booked && (detectBuyerMeetingAcceptance(reply, session.language) || detectConditionalLegalReviewAcceptance(reply, sellerText, personaMeta(session)?.id))) {
+  if (replyResult && replyResult.reply && !session.meta.meeting_booked && (detectBuyerMeetingAcceptance(replyResult.reply, session.language) || detectConditionalLegalReviewAcceptance(replyResult.reply, sellerText, personaMeta(session)?.id))) {
     session.meta.meeting_booked = true;
     session.meta.meeting_booked_turn = sellerMessages(session).length;
   }
@@ -6018,8 +6019,8 @@ function createHintMemoryAttempt(session, suggestion, lang = null, source = 'hin
     prompt_version: suggestionResult?.prompt_version || 'hint-v4.0',
     hint_source: suggestionResult?.hint_source || 'stage_bound',
     fallback_reason: suggestionResult?.fallback_reason || null,
-    llm_rejected: false,
-    llm_rejected_reason: null,
+    llm_rejected: suggestionResult?.llm_rejected || false,
+    llm_rejected_reason: suggestionResult?.llm_rejected_reason || null,
   });
   const records = loadHintMemoryStore();
   records.push(record);
@@ -9692,6 +9693,8 @@ async function generateSellerSuggestion(session, lang = null, snapshot = null, s
   }
 
   // Step 6+7: LLM hint generation with exploration policy
+  let llmRejected = false;
+  let llmRejectedReason = null;
   const llmHint = await generateLlmHint(session, effectiveLang, snapshot, strategy, uiStrategy);
   if (llmHint) {
     // Hard ask gating: reject LLM output that violates the stage-mode contract.
@@ -9701,9 +9704,11 @@ async function generateSellerSuggestion(session, lang = null, snapshot = null, s
     const modeCheck = validateMixedMode(llmHint, hintStageCheck);
     if (modeCheck.valid) {
       const text = adaptTextToDialogue(llmHint, session, 'seller');
-      return { text, hint_source: 'llm_haiku', fallback_reason: null, model: 'claude-haiku-4-5-20251001', prompt_version: 'hint-v4.0' };
+      return { text, hint_source: 'llm_haiku', fallback_reason: null, model: 'claude-haiku-4-5-20251001', prompt_version: 'hint-v4.0', llm_rejected: false, llm_rejected_reason: null };
     }
     // Violation: LLM broke the stage contract — use stage-bound suggestion instead
+    llmRejected = true;
+    llmRejectedReason = modeCheck.violation || 'unknown violation';
   }
 
   // Fallback: rules-based hint generation
@@ -9711,7 +9716,7 @@ async function generateSellerSuggestion(session, lang = null, snapshot = null, s
     const suggestion = generateSellerSuggestionEN(session);
     const resolved = typeof suggestion === 'string' && suggestion.trim() ? suggestion : fallbackSellerSuggestion(session, 'en');
     const text = adaptTextToDialogue(resolved, session, 'seller');
-    return { text, hint_source: 'fallback_template', fallback_reason: 'en_fallback', model: null, prompt_version: 'hint-v4.0' };
+    return { text, hint_source: 'fallback_template', fallback_reason: 'en_fallback', model: null, prompt_version: 'hint-v4.0', llm_rejected: llmRejected, llm_rejected_reason: llmRejectedReason };
   }
 
   const sellerTurnCount = sellerTurnCountEarly;
@@ -9758,17 +9763,18 @@ async function generateSellerSuggestion(session, lang = null, snapshot = null, s
       chooseMemoryInformedCandidate(session, repairPool, pick(repairPool)),
       session, 'seller'
     );
-    return { text, hint_source: 'stage_bound', fallback_reason: null, model: null, prompt_version: 'hint-v4.0' };
+    return { text, hint_source: 'stage_bound', fallback_reason: null, model: null, prompt_version: 'hint-v4.0', llm_rejected: llmRejected, llm_rejected_reason: llmRejectedReason };
   }
 
   // Buyer is irritated — sharpen and get specific
   if (irritation >= 2) {
     const sharpLine = buildConcernSpecificLine(concern || 'scope', product, persona, claims);
-    return adaptTextToDialogue(pick([
+    const text = adaptTextToDialogue(pick([
       `Слышу — без воды. ${sharpLine}`,
       `Понял, давайте конкретнее. ${sharpLine}`,
       sharpLine,
     ]), session, 'seller');
+    return { text, hint_source: 'stage_bound', fallback_reason: null, model: null, prompt_version: 'hint-v4.0', llm_rejected: llmRejected, llm_rejected_reason: llmRejectedReason };
   }
 
   // Address the active concern with a follow-up probe embedded
@@ -9795,11 +9801,11 @@ async function generateSellerSuggestion(session, lang = null, snapshot = null, s
     };
     const probe = pick(probes[persona.archetype] || probes.finance);
     const text = adaptTextToDialogue(concLine + probe, session, 'seller');
-    return { text, hint_source: 'stage_bound', fallback_reason: null, model: null, prompt_version: 'hint-v4.0' };
+    return { text, hint_source: 'stage_bound', fallback_reason: null, model: null, prompt_version: 'hint-v4.0', llm_rejected: llmRejected, llm_rejected_reason: llmRejectedReason };
   }
 
   const finalText = adaptTextToDialogue((typeof concLine === 'string' && concLine.trim()) ? concLine : fallbackSellerSuggestion(session, 'ru'), session, 'seller');
-  return { text: finalText, hint_source: 'stage_bound', fallback_reason: null, model: null, prompt_version: 'hint-v4.0' };
+  return { text: finalText, hint_source: 'stage_bound', fallback_reason: null, model: null, prompt_version: 'hint-v4.0', llm_rejected: llmRejected, llm_rejected_reason: llmRejectedReason };
 }
 
 function normalizeUiStrategy(moveType = null, proofLayer = null) {
@@ -10562,20 +10568,21 @@ async function generateBotReply(session, sellerText) {
   const buyerStateReply = stateDrivenReplyOverride(session, sellerText);
   if (buyerStateReply !== undefined) {
     if (buyerStateReply === null) return null;
-    return isEmailMode(session) ? wrapEmailReply(buyerStateReply, session) : buyerStateReply;
+    const reply = isEmailMode(session) ? wrapEmailReply(buyerStateReply, session) : buyerStateReply;
+    return { reply, reply_source: 'state_override', override_reason: null };
   }
 
   // Random factor check — may short-circuit to ghost/busy/defer
   const rfReply = randomFactorReply(session, sellerText);
   if (rfReply !== null) {
-    if (rfReply === GHOST_MARKER) return null; // null = no reply this turn
-    if (isEmailMode(session)) return wrapEmailReply(rfReply, session);
-    return rfReply;
+    if (rfReply === GHOST_MARKER) return null;
+    const reply = isEmailMode(session) ? wrapEmailReply(rfReply, session) : rfReply;
+    return { reply, reply_source: 'random_factor', override_reason: null };
   }
 
   // Try LLM-based reply first (uses system_prompt + full conversation context)
   const llmReply = await generateLlmReply(session, sellerText);
-  if (llmReply) return llmReply;
+  if (llmReply) return { reply: llmReply, reply_source: 'llm_haiku', override_reason: null };
 
   // Fallback: rules-based engine (used when no ANTHROPIC_API_KEY or LLM fails)
   // Contradiction resolution takes priority — responds in character to "you said X but earlier..."
@@ -10583,7 +10590,7 @@ async function generateBotReply(session, sellerText) {
     const contraFn = () => resolveContradiction(session);
     let reply = deduplicateReply(contraFn(), session, contraFn);
     if (isEmailMode(session)) reply = wrapEmailReply(reply, session);
-    return reply;
+    return { reply, reply_source: 'fallback_template', override_reason: 'contradiction_resolution' };
   }
   const archetype = personaMeta(session).archetype;
   const isEN = session.language === 'en';
@@ -10600,7 +10607,7 @@ async function generateBotReply(session, sellerText) {
   let reply = applyPromptStyleToReply(responder(), session);
   reply = deduplicateReply(reply, session, () => applyPromptStyleToReply(responder(), session));
   if (isEmailMode(session)) reply = wrapEmailReply(reply, session);
-  return reply;
+  return { reply, reply_source: 'fallback_template', override_reason: null };
 }
 
 // ==================== ENGLISH RESPONSE ENGINE ====================
@@ -11714,20 +11721,20 @@ app.post('/api/sessions/:id/message', async (req, res) => {
   updateBehaviorState(session, normalizedSellerText);
   syncLegacyBehaviorState(session);
 
-  const reply = await generateBotReply(session, normalizedSellerText);
+  const replyResult = await generateBotReply(session, normalizedSellerText);
   updateSessionClaims(session, normalizedSellerText);
   session.meta.bot_turns += 1;
-  if (reply !== null) {
-    session.transcript.push({ role: 'bot', text: reply, ts: now() });
+  if (replyResult !== null) {
+    const reply = replyResult.reply;
+    session.transcript.push({ role: 'bot', text: reply, ts: now(), reply_source: replyResult.reply_source, override_reason: replyResult.override_reason });
     sellerEntry.buyer_reply_outcome = 'replied';
     applyBuyerAcceptanceOutcome(session, sellerEntry, reply);
   } else {
-    // Ghost turn: persona went silent. Mark in transcript so seller knows to follow up.
     session.transcript.push({ role: 'system', text: '[No reply — the prospect went silent. Try a follow-up.]', ts: now() });
     session.meta.ghost_turns = (session.meta.ghost_turns || 0) + 1;
     sellerEntry.buyer_reply_outcome = 'silent';
   }
-  if (reply && !session.meta.meeting_booked && (detectBuyerMeetingAcceptance(reply, session.language) || detectConditionalLegalReviewAcceptance(reply, normalizedSellerText, personaMeta(session)?.id))) {
+  if (replyResult && replyResult.reply && !session.meta.meeting_booked && (detectBuyerMeetingAcceptance(replyResult.reply, session.language) || detectConditionalLegalReviewAcceptance(replyResult.reply, normalizedSellerText, personaMeta(session)?.id))) {
     session.meta.meeting_booked = true;
     session.meta.meeting_booked_turn = sellerMessages(session).length;
   }

@@ -30,11 +30,24 @@ run_sessions() {
   cd "$REPO_DIR"
   git checkout "$branch" 2>/dev/null || true
 
+  # Source environment
+  if [ -f .env.v4.example ]; then
+    export $(cat .env.v4.example | grep -v '^#' | xargs)
+  elif [ -f .env ]; then
+    export $(cat .env | grep -v '^#' | xargs)
+  fi
+
   # Start server in background
   echo "Starting server on port $port..."
   PORT=$port node server.js > "$RESULTS_DIR/${branch_label}_server.log" 2>&1 &
   SERVER_PID=$!
   sleep 3
+
+  # Get auth token or session cookie
+  AUTH_TOKEN=$(curl -s -X POST "http://localhost:$port/auth/login" \
+    -H "Content-Type: application/json" \
+    -d "{\"email\":\"test@example.com\"}" \
+    -i 2>&1 | grep -i "set-cookie\|authorization" | head -1 || echo "")
 
   # Run sessions for each persona
   for persona in "${PERSONAS[@]}"; do
