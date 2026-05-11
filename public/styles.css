@@ -1021,6 +1021,49 @@ button:disabled { opacity: 0.45; cursor: default; }
 .bubble--system__opener-text { font-size: 0.88rem; line-height: 1.55; color: var(--text); margin: 0; }
 .bubble--system__use-draft { align-self: flex-start; margin-top: 2px; padding: 4px 10px; font-size: 0.78rem; }
 
+/* MEL-1867: compact brief-lines layout */
+.brief-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 0 0;
+}
+
+.brief-line {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.brief-label {
+  flex: 0 0 88px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.brief-value {
+  flex: 1;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Mobile 320px: persona wraps to two lines */
+@media (max-width: 320px) {
+  .brief-line--persona .brief-value {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+}
+
 .bubble--system__skeleton { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
 .bubble--system__skeleton-line { display: block; height: 14px; border-radius: 6px; background: linear-gradient(90deg, var(--border) 0%, var(--surface) 50%, var(--border) 100%); background-size: 200% 100%; animation: shimmer 1.6s linear infinite; }
 .bubble--system__skeleton-line--short { width: 60%; }
