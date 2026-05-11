@@ -1,4 +1,15 @@
-# Mellow Sales Simulator v1
+# Mellow Sales Simulator v3 — Immutable Baseline
+
+**Version status**: v3 is the production baseline for Sales Sim. This repository is **locked to v3** for comparative testing.
+
+**⚠️ Version Isolation (MEL-1879)**: Sales Sim v4 has moved to a **separate repository** for hard isolation:
+- **v4 Repository**: https://github.com/Vspavel/mellow-sales-sim-4 (separate code, separate Vercel project)
+- **v4 Deployment Guide**: See https://github.com/Vspavel/mellow-sales-sim-4/blob/main/DEPLOYMENT.md
+- **v3/v4 Comparison**: Run both servers locally and use `npm run compare:10x10` to validate v4 against v3 baseline
+
+The v4/ subdirectory that previously existed in this repo is **legacy scaffold only**. Do not use it; use the separate v4 repository instead.
+
+---
 
 Первая рабочая web-версия Mellow Sales Simulator. Сейчас поддерживает 8 buyer personas: Андрей, Алексей, CFO before fundraising, champion / Engineering Manager, Ops Manager, Head of Finance, internal legal, external legal.
 
