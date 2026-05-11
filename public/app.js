@@ -1946,42 +1946,42 @@ function renderSignalCard() {
   const { sde_card: card, bot_name } = state.session;
   const ru = isLanguageRu();
 
-  const headline = (() => {
-    const raw = card?.rendered_text || card?.what_happened || '';
-    if (!raw) return '';
-    const dot = raw.indexOf('.');
-    return (dot > 0 && dot < 100 ? raw.slice(0, dot + 1) : raw.slice(0, 80)).trim();
-  })();
+  const eyebrow = ru ? 'Система · Бриф сигнала' : 'System · Signal briefing';
 
-  const chips = [
-    signalTypeOptionLabel(card.signal_type),
-    card.heat ? `Heat: ${heatLabel(card.heat)}` : '',
-    card.outreach_window ? `Window: ${card.outreach_window}` : '',
-  ].filter(Boolean);
+  // Signal line: signalType · heat · first sentence of rendered_text (≤80 chars)
+  const signalType = signalTypeOptionLabel(card.signal_type) || '';
+  const heat = card.heat ? heatLabel(card.heat) : '';
+  const rawText = card?.rendered_text || card?.what_happened || '';
+  const dot = rawText.indexOf('.');
+  const firstSentence = rawText
+    ? (dot > 0 && dot < 100 ? rawText.slice(0, dot + 1) : rawText.slice(0, 80)).trim() + (rawText.length > 80 && dot < 0 ? '…' : '')
+    : '';
+  const signalVal = [signalType, heat, firstSentence].filter(Boolean).join(' · ');
 
+  // Persona line: name · title · company · hq
   const personaName = card.contact?.name ?? bot_name ?? '';
   const personaTitle = card.contact?.title ?? '';
-  const personaLine = [personaName, personaTitle].filter(Boolean).join(' · ');
-  const companyLine = card.company?.name
-    ? `${card.company.name}${card.company.hq ? ` · ${card.company.hq}` : ''}`
-    : '';
-  const context = card.rendered_text || card.what_happened || '';
-  const eyebrow = ru ? 'Система · Бриф сигнала' : 'System · Signal briefing';
-  const contextLabel = ru ? 'Контекст' : 'Context';
+  const companyName = card.company?.name ?? '';
+  const hq = card.company?.hq ?? '';
+  const personaVal = [personaName, personaTitle, companyName, hq].filter(Boolean).join(' · ');
+
+  // Recommendation line: first_touch_hint (always non-empty via fallback)
+  const hint = card.first_touch_hint || buildFirstTouchFallback(card, null, ru);
+
+  const labels = {
+    signal: ru ? 'Сигнал' : 'Signal',
+    persona: ru ? 'Персона' : 'Contact',
+    hint: ru ? 'Рекомендация' : 'Recommendation',
+  };
 
   signalCard.innerHTML = `
     <section class="bubble bubble--system" role="region" aria-label="${escapeHtml(ru ? 'Бриф сигнала' : 'Signal briefing')}">
       <p class="bubble--system__eyebrow">${escapeHtml(eyebrow)}</p>
-      ${headline ? `<h2 class="bubble--system__headline">${escapeHtml(headline)}</h2>` : ''}
-      ${chips.length ? `<div class="bubble--system__chips">${chips.map((c) => `<span class="run-signal-pill">${escapeHtml(c)}</span>`).join('')}</div>` : ''}
-      ${personaLine ? `<p class="bubble--system__persona-title">${escapeHtml(personaLine)}</p>` : ''}
-      ${companyLine ? `<p class="bubble--system__persona-essence muted">${escapeHtml(companyLine)}</p>` : ''}
-      ${context ? `
-        <div class="bubble--system__opener">
-          <p class="bubble--system__opener-label">${escapeHtml(contextLabel)}</p>
-          <p class="bubble--system__opener-text">${escapeHtml(context)}</p>
-        </div>
-      ` : ''}
+      <div class="brief-lines">
+        ${signalVal ? `<div class="brief-line"><span class="brief-label">${escapeHtml(labels.signal)}</span><span class="brief-value">${escapeHtml(signalVal)}</span></div>` : ''}
+        ${personaVal ? `<div class="brief-line brief-line--persona"><span class="brief-label">${escapeHtml(labels.persona)}</span><span class="brief-value">${escapeHtml(personaVal)}</span></div>` : ''}
+        ${hint ? `<div class="brief-line"><span class="brief-label">${escapeHtml(labels.hint)}</span><span class="brief-value">${escapeHtml(hint)}</span></div>` : ''}
+      </div>
     </section>
   `;
 }
