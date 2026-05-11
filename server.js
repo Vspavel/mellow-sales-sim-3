@@ -2166,8 +2166,9 @@ function createSalesSession({ personaId, sellerId = 'pavel', dialogueType = 'mes
 async function commitAutoMessageTurn(session) {
   const contrastiveSnapshot = buildHintMemorySnapshot(session, session.language);
   const explorationStrategy = pickExplorationStrategy();
-  const sellerText = await generateSellerSuggestion(session, null, contrastiveSnapshot, explorationStrategy);
-  const hintAttempt = createHintMemoryAttempt(session, sellerText, null, 'auto', contrastiveSnapshot, explorationStrategy);
+  const suggestionResult = await generateSellerSuggestion(session, null, contrastiveSnapshot, explorationStrategy);
+  const sellerText = suggestionResult.text;
+  const hintAttempt = createHintMemoryAttempt(session, sellerText, null, 'auto', contrastiveSnapshot, explorationStrategy, suggestionResult);
   const sellerEntry = { role: 'seller', text: sellerText, ts: now() };
   sellerEntry.hint_memory_id = hintAttempt.record.id;
   sellerEntry.hint_memory_context = hintAttempt.retrieval;
@@ -3129,6 +3130,10 @@ function saveHintMemoryStore(records) {
 
 function normalizeHintText(text = '') {
   return String(text || '').toLowerCase().replace(/[^a-z0-9\s-]+/gi, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function punctuationSanitizer(text) {
+  return String(text || '').replace(/\.{2,}/g, '.').trim();
 }
 
 const SALES_ASSET_LIBRARY = {
@@ -5917,6 +5922,26 @@ function memoryScoreCandidate(text, records = [], direction = 1) {
   return score;
 }
 
+function levenshteinSimilarity(s1, s2) {
+  const a = String(s1 || '').trim().toLowerCase();
+  const b = String(s2 || '').trim().toLowerCase();
+  if (!a || !b) return 0;
+  const m = a.length;
+  const n = b.length;
+  const dp = Array(m + 1).fill(0).map(() => Array(n + 1).fill(0));
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      dp[i][j] = a[i - 1] === b[j - 1]
+        ? dp[i - 1][j - 1]
+        : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+    }
+  }
+  const maxLen = Math.max(m, n);
+  return maxLen === 0 ? 1 : 1 - (dp[m][n] / maxLen);
+}
+
 function chooseMemoryInformedCandidate(session, candidates = [], fallback = '', snapshot = null) {
   const cleaned = candidates.map((candidate) => String(candidate || '').trim()).filter(Boolean);
   if (!cleaned.length) return fallback;
@@ -5926,13 +5951,28 @@ function chooseMemoryInformedCandidate(session, candidates = [], fallback = '', 
     score: memoryScoreCandidate(candidate, mem.successful, 1)
       + memoryScoreCandidate(candidate, mem.unsuccessful, -1),
   })).sort((a, b) => b.score - a.score);
-  return ranked[0]?.candidate || fallback || cleaned[0];
+
+  const antiRepetitionList = (mem.successful || [])
+    .slice(0, 10)
+    .map((r) => r.generated_hint || r.hint_text || '')
+    .filter(Boolean);
+
+  const top5 = ranked.slice(0, 5);
+  const filtered = top5.filter((item) => {
+    const hasHighSimilarity = antiRepetitionList.some(
+      (past) => levenshteinSimilarity(item.candidate, past) > 0.7
+    );
+    return !hasHighSimilarity;
+  });
+
+  const pool = filtered.length > 0 ? filtered : top5;
+  return pool[Math.floor(Math.random() * pool.length)]?.candidate || fallback || cleaned[0];
 }
 
 // snapshot may be passed in from the caller to avoid a duplicate retrieval when
 // the same snapshot was already built for generation (Step 5: contrastive retrieval).
 // explorationStrategy (Step 7): 'exploit' | 'adjacent' | 'explore' — stored for analytics.
-function createHintMemoryAttempt(session, suggestion, lang = null, source = 'hint', snapshot = null, explorationStrategy = null) {
+function createHintMemoryAttempt(session, suggestion, lang = null, source = 'hint', snapshot = null, explorationStrategy = null, suggestionResult = null) {
   const retrieval = snapshot || buildHintMemorySnapshot(session, lang);
   const persona = personaMeta(session) || {};
   const record = normalizeHintMemoryRecord({
@@ -5974,6 +6014,12 @@ function createHintMemoryAttempt(session, suggestion, lang = null, source = 'hin
     hint_variant: getHintVariant(session, retrieval.context.hint_stage || 'proof'),
     hint_schema: computeHintSchema(session),
     mixed_mode_violation: validateMixedMode(suggestion, retrieval.context.hint_stage || 'proof').violation || null,
+    model: suggestionResult?.model || null,
+    prompt_version: suggestionResult?.prompt_version || 'hint-v4.0',
+    hint_source: suggestionResult?.hint_source || 'stage_bound',
+    fallback_reason: suggestionResult?.fallback_reason || null,
+    llm_rejected: false,
+    llm_rejected_reason: null,
   });
   const records = loadHintMemoryStore();
   records.push(record);
@@ -9640,7 +9686,8 @@ async function generateSellerSuggestion(session, lang = null, snapshot = null, s
   if (isEmailMode(session) && sellerTurnCountEarly > 0) {
     const emailStageBound = buildStageBoundSuggestion(session, effectiveLang === 'en' ? 'en' : 'ru');
     if (typeof emailStageBound === 'string' && emailStageBound.trim()) {
-      return adaptTextToDialogue(emailStageBound, session, 'seller');
+      const text = adaptTextToDialogue(emailStageBound, session, 'seller');
+      return { text, hint_source: 'stage_bound', fallback_reason: null, model: null, prompt_version: 'hint-v4.0' };
     }
   }
 
@@ -9653,7 +9700,8 @@ async function generateSellerSuggestion(session, lang = null, snapshot = null, s
     const hintStageCheck = getHintPolicyContext(session).hintStage;
     const modeCheck = validateMixedMode(llmHint, hintStageCheck);
     if (modeCheck.valid) {
-      return adaptTextToDialogue(llmHint, session, 'seller');
+      const text = adaptTextToDialogue(llmHint, session, 'seller');
+      return { text, hint_source: 'llm_haiku', fallback_reason: null, model: 'claude-haiku-4-5-20251001', prompt_version: 'hint-v4.0' };
     }
     // Violation: LLM broke the stage contract — use stage-bound suggestion instead
   }
@@ -9662,7 +9710,8 @@ async function generateSellerSuggestion(session, lang = null, snapshot = null, s
   if (effectiveLang === 'en') {
     const suggestion = generateSellerSuggestionEN(session);
     const resolved = typeof suggestion === 'string' && suggestion.trim() ? suggestion : fallbackSellerSuggestion(session, 'en');
-    return adaptTextToDialogue(resolved, session, 'seller');
+    const text = adaptTextToDialogue(resolved, session, 'seller');
+    return { text, hint_source: 'fallback_template', fallback_reason: 'en_fallback', model: null, prompt_version: 'hint-v4.0' };
   }
 
   const sellerTurnCount = sellerTurnCountEarly;
@@ -9679,12 +9728,14 @@ async function generateSellerSuggestion(session, lang = null, snapshot = null, s
 
   // No seller turns yet — give the contextual opener
   if (sellerTurnCount === 0) {
-    return adaptTextToDialogue(buildSellerOpener(session), session, 'seller');
+    const text = adaptTextToDialogue(buildSellerOpener(session), session, 'seller');
+    return { text, hint_source: 'stage_bound', fallback_reason: null, model: null, prompt_version: 'hint-v4.0' };
   }
 
   const stageBound = buildStageBoundSuggestion(session, 'ru');
   if (policy.hintStage !== 'diagnosis' || sellerTurnCount > 0) {
-    return adaptTextToDialogue(stageBound, session, 'seller');
+    const text = adaptTextToDialogue(stageBound, session, 'seller');
+    return { text, hint_source: 'stage_bound', fallback_reason: null, model: null, prompt_version: 'hint-v4.0' };
   }
 
   // Earned ask — persona+state-specific ask routing
@@ -9693,19 +9744,21 @@ async function generateSellerSuggestion(session, lang = null, snapshot = null, s
       ...tunedNextSteps(persona.id, persona.archetype),
       ...getPersonaAskMessages(session, 'ru'),
     ];
-    return adaptTextToDialogue(
+    const text = adaptTextToDialogue(
       chooseMemoryInformedCandidate(session, nextStepPool, pick(nextStepPool)),
       session, 'seller'
     );
+    return { text, hint_source: 'stage_bound', fallback_reason: null, model: null, prompt_version: 'hint-v4.0' };
   }
 
   // Trust repair — trust was damaged, address it before attempting the ask
   if (needsTrustRepair(session)) {
     const repairPool = getTrustRepairMessages(session, 'ru');
-    return adaptTextToDialogue(
+    const text = adaptTextToDialogue(
       chooseMemoryInformedCandidate(session, repairPool, pick(repairPool)),
       session, 'seller'
     );
+    return { text, hint_source: 'stage_bound', fallback_reason: null, model: null, prompt_version: 'hint-v4.0' };
   }
 
   // Buyer is irritated — sharpen and get specific
@@ -9741,10 +9794,12 @@ async function generateSellerSuggestion(session, lang = null, snapshot = null, s
       ],
     };
     const probe = pick(probes[persona.archetype] || probes.finance);
-    return adaptTextToDialogue(concLine + probe, session, 'seller');
+    const text = adaptTextToDialogue(concLine + probe, session, 'seller');
+    return { text, hint_source: 'stage_bound', fallback_reason: null, model: null, prompt_version: 'hint-v4.0' };
   }
 
-  return adaptTextToDialogue((typeof concLine === 'string' && concLine.trim()) ? concLine : fallbackSellerSuggestion(session, 'ru'), session, 'seller');
+  const finalText = adaptTextToDialogue((typeof concLine === 'string' && concLine.trim()) ? concLine : fallbackSellerSuggestion(session, 'ru'), session, 'seller');
+  return { text: finalText, hint_source: 'stage_bound', fallback_reason: null, model: null, prompt_version: 'hint-v4.0' };
 }
 
 function normalizeUiStrategy(moveType = null, proofLayer = null) {
@@ -11728,11 +11783,16 @@ app.get('/api/sessions/:id/seller-suggest', async (req, res) => {
   );
   const contrastiveSnapshot = buildHintMemorySnapshot(session, lang);
   const explorationStrategy = pickExplorationStrategy();
-  const suggestion = await generateSellerSuggestion(session, lang, contrastiveSnapshot, explorationStrategy, uiStrategy);
-  const hintAttempt = createHintMemoryAttempt(session, suggestion, lang, 'hint', contrastiveSnapshot, explorationStrategy);
+  const suggestionResult = await generateSellerSuggestion(session, lang, contrastiveSnapshot, explorationStrategy, uiStrategy);
+  const suggestion = punctuationSanitizer(suggestionResult.text);
+  const hintAttempt = createHintMemoryAttempt(session, suggestion, lang, 'hint', contrastiveSnapshot, explorationStrategy, suggestionResult);
   res.json({
     suggestion,
     hint_id: hintAttempt.record.id,
+    hint_source: suggestionResult.hint_source,
+    fallback_reason: suggestionResult.fallback_reason,
+    model: suggestionResult.model,
+    prompt_version: suggestionResult.prompt_version,
     memory_context: hintAttempt.retrieval,
     ui_strategy: uiStrategy,
   });
