@@ -2204,7 +2204,7 @@ async function commitAutoMessageTurn(session) {
   } else {
     await saveSession(session);
   }
-  return { seller_text: sellerText, reply: reply?.reply ?? null, session };
+  return { seller_text: sellerText, reply: replyResult?.reply ?? null, session };
 }
 
 const evaluationRunMemoryStore = new Map();
