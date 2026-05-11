@@ -2166,8 +2166,9 @@ function createSalesSession({ personaId, sellerId = 'pavel', dialogueType = 'mes
 async function commitAutoMessageTurn(session) {
   const contrastiveSnapshot = buildHintMemorySnapshot(session, session.language);
   const explorationStrategy = pickExplorationStrategy();
-  const sellerText = await generateSellerSuggestion(session, null, contrastiveSnapshot, explorationStrategy);
-  const hintAttempt = createHintMemoryAttempt(session, sellerText, null, 'auto', contrastiveSnapshot, explorationStrategy);
+  const selTelemetry = {};
+  const sellerText = await generateSellerSuggestion(session, null, contrastiveSnapshot, explorationStrategy, undefined, selTelemetry);
+  const hintAttempt = createHintMemoryAttempt(session, sellerText, null, 'auto', contrastiveSnapshot, explorationStrategy, selTelemetry);
   const sellerEntry = { role: 'seller', text: sellerText, ts: now() };
   sellerEntry.hint_memory_id = hintAttempt.record.id;
   sellerEntry.hint_memory_context = hintAttempt.retrieval;
@@ -2180,11 +2181,12 @@ async function commitAutoMessageTurn(session) {
   sellerEntry.buyer_state_transition = transition;
   updateBehaviorState(session, sellerText);
   syncLegacyBehaviorState(session);
-  const reply = await generateBotReply(session, sellerText);
+  const botTelemetry = {};
+  const reply = await generateBotReply(session, sellerText, botTelemetry);
   updateSessionClaims(session, sellerText);
   session.meta.bot_turns += 1;
   if (reply !== null) {
-    session.transcript.push({ role: 'bot', text: reply, ts: now() });
+    session.transcript.push({ role: 'bot', text: reply, reply_source: botTelemetry.reply_source || 'fallback_template', override_reason: botTelemetry.override_reason || null, ts: now() });
     sellerEntry.buyer_reply_outcome = 'replied';
     applyBuyerAcceptanceOutcome(session, sellerEntry, reply);
   } else {
@@ -4088,17 +4090,55 @@ function validateMixedMode(hintText, hintStage) {
   const hasDiagnosisQuestion = /\b(what|where|which|how|why|что|где|какой|как|почему|what's|что за)\b/.test(lower) && lower.includes('?');
   const hasProofClaim = /\b(mellow|kyc|audit|docs|payment|compliance|payout|мелло|документ|аудит|kpi)\b/.test(lower);
 
+  const violations = [];
   if ((hintStage === 'diagnosis' || hintStage === 'proof' || hintStage === 'repair') && hasMeetingAsk) {
-    return { valid: false, violation: `${hintStage} hint must not contain a meeting ask` };
+    violations.push(`${hintStage} hint must not contain a meeting ask`);
   }
   if (hintStage === 'bridge_step' && hasDiagnosisQuestion && hasProofClaim && hasMeetingAsk) {
-    return { valid: false, violation: 'bridge_step hint mixes diagnosis + proof + meeting ask simultaneously' };
+    violations.push('bridge_step hint mixes diagnosis + proof + meeting ask simultaneously');
   }
   if (hintStage === 'direct_ask' && hasDiagnosisQuestion && hasProofClaim && hasMeetingAsk) {
-    return { valid: false, violation: 'direct_ask hint is too broad — mixes diagnosis + proof + ask in one turn' };
+    violations.push('direct_ask hint is too broad — mixes diagnosis + proof + ask in one turn');
   }
+  if (violations.length) return { valid: false, violation: violations[0], violations };
+  return { valid: true, violation: null, violations: [] };
+}
 
-  return { valid: true, violation: null };
+function levenshteinDistance(a, b) {
+  const m = a.length, n = b.length;
+  const dp = Array.from({ length: m + 1 }, (_, i) =>
+    Array.from({ length: n + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0)));
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      dp[i][j] = a[i - 1] === b[j - 1]
+        ? dp[i - 1][j - 1]
+        : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+    }
+  }
+  return dp[m][n];
+}
+
+function levenshteinSimilarity(a, b) {
+  const sa = String(a || ''), sb = String(b || '');
+  const maxLen = Math.max(sa.length, sb.length);
+  if (maxLen === 0) return 1;
+  return 1 - levenshteinDistance(sa, sb) / maxLen;
+}
+
+function sanitizeHintPunctuation(text) {
+  return String(text || '')
+    .replace(/\.{2,}/g, '.')
+    .replace(/  +/g, ' ')
+    .replace(/ \./g, '.')
+    .trim();
+}
+
+function diversityAwareCandidate(candidates, recentOpeners, topN = 5) {
+  const top = candidates.slice(0, topN);
+  const filtered = top.filter((c) =>
+    !recentOpeners.some((r) => levenshteinSimilarity(c, r) > 0.7));
+  const pool = filtered.length > 0 ? filtered : top;
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
 function buildStageBoundSuggestion(session, lang = 'ru') {
@@ -5917,7 +5957,7 @@ function memoryScoreCandidate(text, records = [], direction = 1) {
   return score;
 }
 
-function chooseMemoryInformedCandidate(session, candidates = [], fallback = '', snapshot = null) {
+function chooseMemoryInformedCandidate(session, candidates = [], fallback = '', snapshot = null, useFirstTurnDiversity = false) {
   const cleaned = candidates.map((candidate) => String(candidate || '').trim()).filter(Boolean);
   if (!cleaned.length) return fallback;
   const mem = snapshot || buildHintMemorySnapshot(session, session.language);
@@ -5926,13 +5966,17 @@ function chooseMemoryInformedCandidate(session, candidates = [], fallback = '', 
     score: memoryScoreCandidate(candidate, mem.successful, 1)
       + memoryScoreCandidate(candidate, mem.unsuccessful, -1),
   })).sort((a, b) => b.score - a.score);
+  if (useFirstTurnDiversity) {
+    const recentOpeners = loadHintRecency();
+    return diversityAwareCandidate(ranked.map((r) => r.candidate), recentOpeners);
+  }
   return ranked[0]?.candidate || fallback || cleaned[0];
 }
 
 // snapshot may be passed in from the caller to avoid a duplicate retrieval when
 // the same snapshot was already built for generation (Step 5: contrastive retrieval).
 // explorationStrategy (Step 7): 'exploit' | 'adjacent' | 'explore' — stored for analytics.
-function createHintMemoryAttempt(session, suggestion, lang = null, source = 'hint', snapshot = null, explorationStrategy = null) {
+function createHintMemoryAttempt(session, suggestion, lang = null, source = 'hint', snapshot = null, explorationStrategy = null, telemetry = {}) {
   const retrieval = snapshot || buildHintMemorySnapshot(session, lang);
   const persona = personaMeta(session) || {};
   const record = normalizeHintMemoryRecord({
@@ -5974,6 +6018,12 @@ function createHintMemoryAttempt(session, suggestion, lang = null, source = 'hin
     hint_variant: getHintVariant(session, retrieval.context.hint_stage || 'proof'),
     hint_schema: computeHintSchema(session),
     mixed_mode_violation: validateMixedMode(suggestion, retrieval.context.hint_stage || 'proof').violation || null,
+    hint_source: telemetry.hint_source || null,
+    fallback_reason: telemetry.fallback_reason || null,
+    model: telemetry.model || null,
+    prompt_version: telemetry.prompt_version || null,
+    llm_rejected: telemetry.llm_rejected || false,
+    llm_rejected_reason: telemetry.llm_rejected_reason || [],
   });
   const records = loadHintMemoryStore();
   records.push(record);
@@ -8867,11 +8917,11 @@ function buildSellerOpener(session) {
     ],
   };
   if (!isEmailMode(session) && signalAwareOpeners.length) {
-    return chooseMemoryInformedCandidate(session, signalAwareOpeners, pick(signalAwareOpeners));
+    return chooseMemoryInformedCandidate(session, signalAwareOpeners, pick(signalAwareOpeners), null, true);
   }
 
   if (isEmailMode(session) && signalAwareOpeners.length) {
-    return chooseMemoryInformedCandidate(session, signalAwareOpeners, pick(signalAwareOpeners));
+    return chooseMemoryInformedCandidate(session, signalAwareOpeners, pick(signalAwareOpeners), null, true);
   }
 
   if (openers[persona.id]?.length) {
@@ -9630,7 +9680,10 @@ function fallbackSellerSuggestion(session, lang = null) {
   return `Какой платёжный или contractor-риск вам сейчас важнее всего снизить?`;
 }
 
-async function generateSellerSuggestion(session, lang = null, snapshot = null, strategy = null, uiStrategy = null) {
+async function generateSellerSuggestion(session, lang = null, snapshot = null, strategy = null, uiStrategy = null, telemetry = null) {
+  const setTel = (fields) => { if (telemetry) Object.assign(telemetry, fields); };
+  setTel({ hint_source: 'fallback_template', fallback_reason: null, model: null, prompt_version: 'hint-v3.0', llm_rejected: false, llm_rejected_reason: [] });
+
   const effectiveLang = lang === 'en' || lang === 'ru'
     ? lang
     : (session.language === 'en' ? 'en' : 'ru');
@@ -9640,6 +9693,7 @@ async function generateSellerSuggestion(session, lang = null, snapshot = null, s
   if (isEmailMode(session) && sellerTurnCountEarly > 0) {
     const emailStageBound = buildStageBoundSuggestion(session, effectiveLang === 'en' ? 'en' : 'ru');
     if (typeof emailStageBound === 'string' && emailStageBound.trim()) {
+      setTel({ hint_source: 'stage_bound' });
       return adaptTextToDialogue(emailStageBound, session, 'seller');
     }
   }
@@ -9653,15 +9707,18 @@ async function generateSellerSuggestion(session, lang = null, snapshot = null, s
     const hintStageCheck = getHintPolicyContext(session).hintStage;
     const modeCheck = validateMixedMode(llmHint, hintStageCheck);
     if (modeCheck.valid) {
-      return adaptTextToDialogue(llmHint, session, 'seller');
+      setTel({ hint_source: 'llm_haiku', model: 'claude-haiku-4-5-20251001' });
+      return adaptTextToDialogue(sanitizeHintPunctuation(llmHint), session, 'seller');
     }
-    // Violation: LLM broke the stage contract — use stage-bound suggestion instead
+    // Violation: LLM broke the stage contract — log rejection and use stage-bound suggestion instead
+    setTel({ hint_source: 'stage_bound', fallback_reason: 'llm_rejected_stage_contract', llm_rejected: true, llm_rejected_reason: modeCheck.violations });
   }
 
   // Fallback: rules-based hint generation
   if (effectiveLang === 'en') {
     const suggestion = generateSellerSuggestionEN(session);
     const resolved = typeof suggestion === 'string' && suggestion.trim() ? suggestion : fallbackSellerSuggestion(session, 'en');
+    if (!telemetry?.llm_rejected) setTel({ hint_source: 'fallback_template', fallback_reason: llmHint ? 'llm_rejected_stage_contract' : 'llm_unavailable' });
     return adaptTextToDialogue(resolved, session, 'seller');
   }
 
@@ -9677,13 +9734,15 @@ async function generateSellerSuggestion(session, lang = null, snapshot = null, s
   const resolvedCount = Object.keys(resolvedConcerns).length;
   const product = getRecommendedProduct(session);
 
-  // No seller turns yet — give the contextual opener
+  // No seller turns yet — give the contextual opener (diversity handled in buildSellerOpener)
   if (sellerTurnCount === 0) {
+    setTel({ hint_source: 'stage_bound' });
     return adaptTextToDialogue(buildSellerOpener(session), session, 'seller');
   }
 
   const stageBound = buildStageBoundSuggestion(session, 'ru');
   if (policy.hintStage !== 'diagnosis' || sellerTurnCount > 0) {
+    setTel({ hint_source: 'stage_bound' });
     return adaptTextToDialogue(stageBound, session, 'seller');
   }
 
@@ -10503,9 +10562,14 @@ async function generateLlmHint(session, lang = null, snapshot = null, strategy =
   }
 }
 
-async function generateBotReply(session, sellerText) {
+async function generateBotReply(session, sellerText, telemetry = null) {
+  const setBotTel = (source, overrideReason = null) => {
+    if (telemetry) { telemetry.reply_source = source; telemetry.override_reason = overrideReason; }
+  };
+
   const buyerStateReply = stateDrivenReplyOverride(session, sellerText);
   if (buyerStateReply !== undefined) {
+    setBotTel('state_override', buyerStateReply === null ? 'ghost' : null);
     if (buyerStateReply === null) return null;
     return isEmailMode(session) ? wrapEmailReply(buyerStateReply, session) : buyerStateReply;
   }
@@ -10513,6 +10577,7 @@ async function generateBotReply(session, sellerText) {
   // Random factor check — may short-circuit to ghost/busy/defer
   const rfReply = randomFactorReply(session, sellerText);
   if (rfReply !== null) {
+    setBotTel('random_factor');
     if (rfReply === GHOST_MARKER) return null; // null = no reply this turn
     if (isEmailMode(session)) return wrapEmailReply(rfReply, session);
     return rfReply;
@@ -10520,9 +10585,10 @@ async function generateBotReply(session, sellerText) {
 
   // Try LLM-based reply first (uses system_prompt + full conversation context)
   const llmReply = await generateLlmReply(session, sellerText);
-  if (llmReply) return llmReply;
+  if (llmReply) { setBotTel('llm_haiku'); return llmReply; }
 
   // Fallback: rules-based engine (used when no ANTHROPIC_API_KEY or LLM fails)
+  setBotTel('fallback_template');
   // Contradiction resolution takes priority — responds in character to "you said X but earlier..."
   if (detectContradictionProbe(sellerText) && (session.meta.bot_turns || 0) >= 1) {
     const contraFn = () => resolveContradiction(session);
@@ -11659,11 +11725,12 @@ app.post('/api/sessions/:id/message', async (req, res) => {
   updateBehaviorState(session, normalizedSellerText);
   syncLegacyBehaviorState(session);
 
-  const reply = await generateBotReply(session, normalizedSellerText);
+  const msgBotTelemetry = {};
+  const reply = await generateBotReply(session, normalizedSellerText, msgBotTelemetry);
   updateSessionClaims(session, normalizedSellerText);
   session.meta.bot_turns += 1;
   if (reply !== null) {
-    session.transcript.push({ role: 'bot', text: reply, ts: now() });
+    session.transcript.push({ role: 'bot', text: reply, reply_source: msgBotTelemetry.reply_source || 'fallback_template', override_reason: msgBotTelemetry.override_reason || null, ts: now() });
     sellerEntry.buyer_reply_outcome = 'replied';
     applyBuyerAcceptanceOutcome(session, sellerEntry, reply);
   } else {
@@ -11728,13 +11795,18 @@ app.get('/api/sessions/:id/seller-suggest', async (req, res) => {
   );
   const contrastiveSnapshot = buildHintMemorySnapshot(session, lang);
   const explorationStrategy = pickExplorationStrategy();
-  const suggestion = await generateSellerSuggestion(session, lang, contrastiveSnapshot, explorationStrategy, uiStrategy);
-  const hintAttempt = createHintMemoryAttempt(session, suggestion, lang, 'hint', contrastiveSnapshot, explorationStrategy);
+  const suggestTelemetry = {};
+  const suggestion = await generateSellerSuggestion(session, lang, contrastiveSnapshot, explorationStrategy, uiStrategy, suggestTelemetry);
+  const hintAttempt = createHintMemoryAttempt(session, suggestion, lang, 'hint', contrastiveSnapshot, explorationStrategy, suggestTelemetry);
   res.json({
     suggestion,
     hint_id: hintAttempt.record.id,
     memory_context: hintAttempt.retrieval,
     ui_strategy: uiStrategy,
+    hint_source: suggestTelemetry.hint_source || 'fallback_template',
+    fallback_reason: suggestTelemetry.fallback_reason || null,
+    model: suggestTelemetry.model || null,
+    prompt_version: suggestTelemetry.prompt_version || 'hint-v3.0',
   });
 });
 
