@@ -1171,20 +1171,24 @@ function renderSystemSignalBubble() {
   }
 
   const copy = buildSystemSignalCopy(card, persona);
+  const ru = isLanguageRu();
+  const signalType = card.signal_type ? signalTypeOptionLabel(card.signal_type) : '';
+  const heat = card.heat ? heatLabel(card.heat) : '';
+  const signalVal = [signalType, heat, copy.headline].filter(Boolean).join(' · ');
+  const personaVal = [copy.personaTitle, copy.companyLine].filter(Boolean).join(' · ');
+  const labels = {
+    signal: ru ? 'Сигнал' : 'Signal',
+    persona: ru ? 'Персона' : 'Contact',
+    hint: ru ? 'Рекомендация' : 'Recommendation',
+  };
   wrap.innerHTML = `
     <p class="bubble--system__eyebrow">${escapeHtml(copy.eyebrow)}</p>
-    <h2 class="bubble--system__headline">${escapeHtml(copy.headline)}</h2>
-    ${copy.chips.length ? `<div class="bubble--system__chips">${copy.chips.map((c) => `<span class="run-signal-pill">${escapeHtml(c)}</span>`).join('')}</div>` : ''}
-    ${copy.personaTitle ? `<p class="bubble--system__persona-title">${escapeHtml(copy.personaTitle)}</p>` : ''}
-    ${copy.personaEssence ? `<p class="bubble--system__persona-essence muted">${escapeHtml(copy.personaEssence)}</p>` : ''}
-    ${copy.companyLine ? `<p class="bubble--system__persona-essence muted">${escapeHtml(copy.companyLine)}</p>` : ''}
-    ${copy.opener ? `
-      <div class="bubble--system__opener">
-        <p class="bubble--system__opener-label">${escapeHtml(copy.openerLabel)}</p>
-        <p class="bubble--system__opener-text">${escapeHtml(copy.opener)}</p>
-        <button type="button" class="ghost-btn bubble--system__use-draft" data-action="use-as-draft" data-draft="${escapeHtml(copy.opener)}">${escapeHtml(copy.useDraftLabel)}</button>
-      </div>
-    ` : ''}
+    <div class="brief-lines">
+      ${signalVal ? `<div class="brief-line"><span class="brief-label">${escapeHtml(labels.signal)}</span><span class="brief-value">${escapeHtml(signalVal)}</span></div>` : ''}
+      ${personaVal ? `<div class="brief-line brief-line--persona"><span class="brief-label">${escapeHtml(labels.persona)}</span><span class="brief-value">${escapeHtml(personaVal)}</span></div>` : ''}
+      ${copy.opener ? `<div class="brief-line"><span class="brief-label">${escapeHtml(labels.hint)}</span><span class="brief-value">${escapeHtml(copy.opener)}</span></div>` : ''}
+    </div>
+    ${copy.opener ? `<button type="button" class="ghost-btn bubble--system__use-draft" data-action="use-as-draft" data-draft="${escapeHtml(copy.opener)}">${escapeHtml(copy.useDraftLabel)}</button>` : ''}
   `;
   return wrap;
 }
