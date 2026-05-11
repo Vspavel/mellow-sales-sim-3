@@ -7,8 +7,6 @@
   },
   "routes": [
     { "src": "/fonts/(.*)", "dest": "/fonts/$1" },
-    { "src": "/styles.css", "dest": "/styles.css" },
-    { "src": "/app.js", "dest": "/app.js" },
     { "src": "/(.*)", "dest": "/api/index.js" }
   ]
 }
