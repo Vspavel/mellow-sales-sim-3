@@ -12351,6 +12351,22 @@ app.get('/analysis', auth.middleware(), (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'analysis.html'));
 });
 
+// Register Cost Ledger routes (GET /api/companies/:companyId/costs/models)
+registerCostRoutes(app);
+
+// Register Token Ledger routes (ingest, query, report endpoints)
+registerTokenRoutes(app);
+
+// Register Model Pricing Settings routes (list, upsert, update, backfill)
+registerPricingRoutes(app);
+
+/*
+ * GET /pricing-settings — Model pricing settings admin page
+ */
+app.get('/pricing-settings', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'pricing-settings.html'));
+});
+
 app.get('*', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -12383,22 +12399,6 @@ async function backfillArtifacts() {
     console.error('[artifacts] backfill error:', err.message);
   }
 }
-
-// Register Cost Ledger routes (GET /api/companies/:companyId/costs/models)
-registerCostRoutes(app);
-
-// Register Token Ledger routes (ingest, query, report endpoints)
-registerTokenRoutes(app);
-
-// Register Model Pricing Settings routes (list, upsert, update, backfill)
-registerPricingRoutes(app);
-
-/*
- * GET /pricing-settings — Model pricing settings admin page
- */
-app.get('/pricing-settings', (_req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'pricing-settings.html'));
-});
 
 export default app;
 
