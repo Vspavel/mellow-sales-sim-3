@@ -29,8 +29,13 @@ const MODEL_PRICES = {
   'gpt-3.5-turbo':          { input: 0.50, output: 1.50, cacheRead: null, cacheWrite: null },
 
   // DeepSeek
+  // V3 models — scheduled for deprecation 2026/07/24 per DeepSeek API docs
   'deepseek-chat':          { input: 0.27, output: 1.10, cacheRead: 0.07, cacheWrite: 0.27 },
   'deepseek-reasoner':      { input: 0.55, output: 2.19, cacheRead: 0.14, cacheWrite: 0.55 },
+
+  // DeepSeek V4 (primary models, verified from api-docs.deepseek.com/quick_start/pricing)
+  'deepseek-v4-flash':      { input: 0.14, output: 0.28, cacheRead: 0.0028, cacheWrite: null },
+  'deepseek-v4-pro':        { input: 0.435, output: 0.87, cacheRead: 0.003625, cacheWrite: null },
 
   // Bedrock (Anthropic models via AWS)
   'bedrock-claude-sonnet-4-6':  { input: 3.00, output: 15.00, cacheRead: 0.30, cacheWrite: 3.75 },
