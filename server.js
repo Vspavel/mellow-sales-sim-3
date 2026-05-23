@@ -9,6 +9,10 @@ import { createAuth } from './middleware/auth.js';
 import { runBatch, randomBatchId, BATCH_PERSONAS, SIMS_PER_PERSONA } from './server/batch_runner.js';
 import { runAnalysis } from './server/analysis_engine.js';
 import { query as dbQuery } from './db/client.js';
+import { registerCostRoutes } from './server/costs/api-handler.js';
+import { registerTokenRoutes } from './server/tokens/index.js';
+import { recordTokenUsage } from './server/tokens/runtime-usage-hook.js';
+import { registerPricingRoutes } from './server/pricing/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -10135,6 +10139,26 @@ async function generateLlmReply(session, sellerText) {
       messages: messages.length ? messages : [{ role: 'user', content: sellerText }],
     });
     const text = response.content?.[0]?.text;
+
+    // Record token usage (fire-and-forget, never fail the run)
+    if (response && response.usage) {
+      recordTokenUsage({
+        provider: 'anthropic',
+        modelId: 'claude-haiku-4-5-20251001',
+        api: 'anthropic-messages',
+        usage: {
+          input: response.usage.input_tokens || 0,
+          output: response.usage.output_tokens || 0,
+          cacheRead: response.usage.cache_read_input_tokens || 0,
+          cacheWrite: response.usage.cache_creation_input_tokens || 0,
+          totalTokens: (response.usage.input_tokens || 0) + (response.usage.output_tokens || 0),
+        },
+        rawUsage: response.usage,
+        accuracy: 'provider_reported',
+        context: { companyId: 'company-default', callType: 'llm' },
+      }).catch(() => {});
+    }
+
     return text ? String(text).trim() : null;
   } catch (err) {
     console.error('[LLM] generateLlmReply error:', err?.message || err);
@@ -10551,6 +10575,26 @@ async function generateLlmHint(session, lang = null, snapshot = null, strategy =
       messages: [{ role: 'user', content: userMsg }],
     });
     const text = response.content?.[0]?.text;
+
+    // Record token usage (fire-and-forget, never fail the run)
+    if (response && response.usage) {
+      recordTokenUsage({
+        provider: 'anthropic',
+        modelId: 'claude-haiku-4-5-20251001',
+        api: 'anthropic-messages',
+        usage: {
+          input: response.usage.input_tokens || 0,
+          output: response.usage.output_tokens || 0,
+          cacheRead: response.usage.cache_read_input_tokens || 0,
+          cacheWrite: response.usage.cache_creation_input_tokens || 0,
+          totalTokens: (response.usage.input_tokens || 0) + (response.usage.output_tokens || 0),
+        },
+        rawUsage: response.usage,
+        accuracy: 'provider_reported',
+        context: { companyId: 'company-default', callType: 'llm' },
+      }).catch(() => {});
+    }
+
     if (!text) return null;
     const effectiveLang = session?.language === 'en' ? 'en' : 'ru';
     const hint = normalizeSellerLanguage(String(text).trim(), effectiveLang);
@@ -12339,6 +12383,22 @@ async function backfillArtifacts() {
     console.error('[artifacts] backfill error:', err.message);
   }
 }
+
+// Register Cost Ledger routes (GET /api/companies/:companyId/costs/models)
+registerCostRoutes(app);
+
+// Register Token Ledger routes (ingest, query, report endpoints)
+registerTokenRoutes(app);
+
+// Register Model Pricing Settings routes (list, upsert, update, backfill)
+registerPricingRoutes(app);
+
+/*
+ * GET /pricing-settings — Model pricing settings admin page
+ */
+app.get('/pricing-settings', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'pricing-settings.html'));
+});
 
 export default app;
 

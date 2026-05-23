@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Model Pricing Settings — Mellow Cost Ledger</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'&gt;&lt;rect width='32' height='32' rx='6' fill='%23ff6f23'/&gt;&lt;text x='16' y='22' text-anchor='middle' font-family='Helvetica,Arial,sans-serif' font-weight='600' font-size='20' fill='%23f8f2e9'&gt;m&lt;/text&gt;&lt;/svg&gt;" />
+  <link rel="preload" href="/fonts/PPNeueWorld-Regular.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/SuisseIntl-Regular.woff2"  as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/SuisseIntl-Medium.woff2"   as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .pricing-page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    .pricing-page h1 {
+      margin-bottom: 0.25rem;
+    }
+    .pricing-page .subtitle {
+      color: var(--muted-color, #888);
+      margin-bottom: 2rem;
+    }
+    .pricing-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 2rem;
+      font-size: 0.9rem;
+    }
+    .pricing-table th {
+      text-align: left;
+      padding: 0.75rem 0.5rem;
+      border-bottom: 2px solid var(--border-color, #e0d8cc);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .pricing-table td {
+      padding: 0.5rem;
+      border-bottom: 1px solid var(--border-color, #e8e0d4);
+      vertical-align: middle;
+    }
+    .pricing-table td input[type="number"] {
+      width: 90px;
+      padding: 0.3rem 0.5rem;
+      font-size: 0.85rem;
+      border: 1px solid var(--border-color, #d0c8bc);
+      border-radius: 4px;
+      background: var(--bg-color, #faf5ed);
+      color: var(--text-color, #1a1a1a);
+    }
+    .pricing-table td input[type="number"]:focus {
+      border-color: var(--accent-color, #ff6f23);
+      outline: none;
+    }
+    .pricing-table .model-cell {
+      font-family: monospace;
+      font-size: 0.85rem;
+    }
+    .pricing-table .provider-badge {
+      display: inline-block;
+      padding: 0.15rem 0.4rem;
+      border-radius: 3px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      background: var(--accent-bg, #f0e8dc);
+      color: var(--text-color, #1a1a1a);
+    }
+    .pricing-table .default-badge {
+      display: inline-block;
+      padding: 0.1rem 0.3rem;
+      border-radius: 3px;
+      font-size: 0.7rem;
+      background: #f0e8dc;
+      color: #888;
+    }
+    .pricing-table .save-btn {
+      padding: 0.3rem 0.75rem;
+      font-size: 0.8rem;
+      border: 1px solid var(--accent-color, #ff6f23);
+      background: transparent;
+      color: var(--accent-color, #ff6f23);
+      border-radius: 4px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .pricing-table .save-btn:hover {
+      background: var(--accent-color, #ff6f23);
+      color: #fff;
+    }
+    .pricing-table .save-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .pricing-table .status-cell {
+      font-size: 0.75rem;
+      color: #888;
+      width: 80px;
+      text-align: center;
+    }
+    .toolbar {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .toolbar .btn {
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      border: 1px solid var(--border-color, #d0c8bc);
+      background: var(--bg-color, #faf5ed);
+      color: var(--text-color, #1a1a1a);
+    }
+    .toolbar .btn.primary {
+      background: var(--accent-color, #ff6f23);
+      border-color: var(--accent-color, #ff6f23);
+      color: #fff;
+    }
+    .toolbar .btn.primary:hover {
+      opacity: 0.9;
+    }
+    .toolbar .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .message {
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+      display: none;
+    }
+    .message.success {
+      display: block;
+      background: #e6f7e6;
+      border: 1px solid #b7e0b7;
+      color: #2d662d;
+    }
+    .message.error {
+      display: block;
+      background: #fde8e8;
+      border: 1px solid #f5c6c6;
+      color: #a33a3a;
+    }
+    .message.info {
+      display: block;
+      background: #e8f0fd;
+      border: 1px solid #b8d4f5;
+      color: #2a5d99;
+    }
+    .cost-header {
+      cursor: help;
+      border-bottom: 1px dashed var(--border-color, #d0c8bc);
+    }
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: #888;
+    }
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <div class="pricing-page">
+    <h1>Model Pricing Settings</h1>
+    <p class="subtitle">Set token cost per model. Costs are in USD per 1,000 tokens. Settings auto-created with default 0 when a new model is first logged.</p>
+
+    <div id="messageBox" class="message"></div>
+
+    <div class="toolbar">
+      <button id="backfillBtn" class="btn" type="button">Backfill from Token Ledger</button>
+      <button id="refreshBtn" class="btn" type="button">Refresh</button>
+      <span id="modelCount" style="font-size:0.85rem;color:#888;"></span>
+    </div>
+
+    <div id="loadingState" class="loading">Loading pricing settings...</div>
+    <div id="emptyState" class="empty-state" style="display:none;">
+      No pricing settings found. New models get auto-created with default 0 when tokens are first logged, or use "Backfill from Token Ledger" to create settings for all existing models.
+    </div>
+
+    <div id="tableContainer" style="display:none;">
+      <table class="pricing-table">
+        <thead>
+          <tr>
+            <th>Provider</th>
+            <th>Model</th>
+            <th title="USD per 1,000 input tokens" class="cost-header">Input $/1K</th>
+            <th title="USD per 1,000 output tokens" class="cost-header">Output $/1K</th>
+            <th title="USD per 1,000 cache read tokens" class="cost-header">Cache Read $/1K</th>
+            <th title="USD per 1,000 cache write tokens" class="cost-header">Cache Write $/1K</th>
+            <th>Label</th>
+            <th></th>
+            <th class="status-cell">Status</th>
+          </tr>
+        </thead>
+        <tbody id="settingsBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = '/api/companies/company-default';
+    const settingsBody = document.getElementById('settingsBody');
+    const loadingState = document.getElementById('loadingState');
+    const emptyState = document.getElementById('emptyState');
+    const tableContainer = document.getElementById('tableContainer');
+    const messageBox = document.getElementById('messageBox');
+    const modelCount = document.getElementById('modelCount');
+
+    async function api(path, options = {}) {
+      const res = await fetch(`${API_BASE}${path}`, {
+        headers: { 'Content-Type': 'application/json', ...options.headers },
+        ...options,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      return data;
+    }
+
+    function showMessage(text, type = 'info') {
+      messageBox.className = `message ${type}`;
+      messageBox.textContent = text;
+      if (type === 'success' || type === 'info') {
+        setTimeout(() => { messageBox.style.display = 'none'; }, 5000);
+      }
+    }
+
+    function formatCost(val) {
+      if (val === null || val === undefined) return '—';
+      return Number(val).toFixed(8).replace(/\.?0+$/, '');
+    }
+
+    function renderSettings(settings) {
+      settingsBody.innerHTML = '';
+      if (!settings || settings.length === 0) {
+        tableContainer.style.display = 'none';
+        emptyState.style.display = 'block';
+        modelCount.textContent = '';
+        return;
+      }
+
+      tableContainer.style.display = 'block';
+      emptyState.style.display = 'none';
+      modelCount.textContent = `${settings.length} model${settings.length !== 1 ? 's' : ''}`;
+
+      settings.forEach(s => {
+        const tr = document.createElement('tr');
+        tr.dataset.id = s.id;
+
+        const defaultBadge = s.is_default ? '<span class="default-badge">default</span>' : '';
+
+        tr.innerHTML = `
+          <td><span class="provider-badge">${esc(s.provider)}</span></td>
+          <td class="model-cell">${esc(s.model_id)} ${defaultBadge}</td>
+          <td><input type="number" step="any" min="0" value="${s.cost_per_input_token}" data-field="cost_per_input_token" /></td>
+          <td><input type="number" step="any" min="0" value="${s.cost_per_output_token}" data-field="cost_per_output_token" /></td>
+          <td><input type="number" step="any" min="0" value="${s.cost_per_cache_read_token ?? ''}" data-field="cost_per_cache_read_token" placeholder="—" /></td>
+          <td><input type="number" step="any" min="0" value="${s.cost_per_cache_write_token ?? ''}" data-field="cost_per_cache_write_token" placeholder="—" /></td>
+          <td><input type="text" value="${esc(s.label || '')}" data-field="label" style="width:120px;padding:0.3rem 0.5rem;font-size:0.85rem;border:1px solid var(--border-color,#d0c8bc);border-radius:4px;" /></td>
+          <td><button class="save-btn" data-action="save">Save</button></td>
+          <td class="status-cell"><span class="save-status"></span></td>
+        `;
+
+        const saveBtn = tr.querySelector('[data-action="save"]');
+        saveBtn.addEventListener('click', async () => {
+          const inputs = tr.querySelectorAll('input[data-field]');
+          const updates = {};
+          inputs.forEach(inp => {
+            const field = inp.dataset.field;
+            if (field === 'label') {
+              updates.label = inp.value;
+            } else if (field.startsWith('cost_per_')) {
+              updates[field] = inp.value === '' ? null : Number(inp.value);
+            }
+          });
+
+          const statusCell = tr.querySelector('.save-status');
+          statusCell.textContent = 'saving...';
+          saveBtn.disabled = true;
+
+          try {
+            const result = await api(`/pricing/settings/${s.id}`, {
+              method: 'PUT',
+              body: JSON.stringify(updates),
+            });
+            statusCell.textContent = 'saved';
+            showMessage(`Updated ${s.provider}/${s.model_id}`, 'success');
+            setTimeout(() => { statusCell.textContent = ''; }, 2000);
+          } catch (err) {
+            statusCell.textContent = 'error';
+            showMessage(`Failed to save: ${err.message}`, 'error');
+          } finally {
+            saveBtn.disabled = false;
+          }
+        });
+
+        settingsBody.appendChild(tr);
+      });
+    }
+
+    function esc(s) {
+      if (!s) return '';
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    async function loadSettings() {
+      loadingState.style.display = 'block';
+      tableContainer.style.display = 'none';
+      emptyState.style.display = 'none';
+
+      try {
+        const data = await api('/pricing/settings');
+        renderSettings(data.settings);
+      } catch (err) {
+        showMessage(`Failed to load settings: ${err.message}`, 'error');
+        loadingState.style.display = 'none';
+        emptyState.style.display = 'block';
+        emptyState.textContent = `Error loading settings: ${err.message}`;
+      } finally {
+        loadingState.style.display = 'none';
+      }
+    }
+
+    async function backfill() {
+      const btn = document.getElementById('backfillBtn');
+      btn.disabled = true;
+      btn.textContent = 'Backfilling...';
+
+      try {
+        const data = await api('/pricing/backfill', { method: 'POST' });
+        showMessage(`Backfill complete: ${data.backfilled} setting(s) created`, data.backfilled > 0 ? 'success' : 'info');
+        await loadSettings();
+      } catch (err) {
+        showMessage(`Backfill failed: ${err.message}`, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Backfill from Token Ledger';
+      }
+    }
+
+    document.getElementById('refreshBtn').addEventListener('click', loadSettings);
+    document.getElementById('backfillBtn').addEventListener('click', backfill);
+
+    loadSettings();
+  </script>
+</body>
+</html>

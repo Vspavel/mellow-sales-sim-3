@@ -94,6 +94,8 @@ function isPublicPath(req) {
     }
   }
   if (req.method === 'POST' && PUBLIC_POST_PATHS.has(req.path)) return true;
+  // Token Ledger routes: allow runtime API key for POST, public GET for query reports
+  if (req.path.includes('/tokens/')) return true;
   return false;
 }
 
@@ -121,6 +123,19 @@ function ipOf(req) {
     return forwarded.split(',')[0].trim();
   }
   return req.socket?.remoteAddress || 'unknown';
+}
+
+function isRuntimeApiPath(req) {
+  // Token Ledger routes accept runtime API key via Bearer token
+  return req.path.includes('/tokens/');
+}
+
+function validateRuntimeApiKey(req) {
+  const apiKey = process.env.RUNTIME_API_KEY;
+  if (!apiKey) return false; // No key configured = skip validation
+  const bearer = readBearer(req);
+  if (!bearer) return false;
+  return timingSafeEqual(bearer, apiKey);
 }
 
 export function createAuth({ logger = console } = {}) {
@@ -185,7 +200,15 @@ export function createAuth({ logger = console } = {}) {
 
   function middleware() {
     return (req, res, next) => {
-      if (isPublicPath(req)) return next();
+      if (isPublicPath(req)) {
+        // For runtime API paths (tokens), validate runtime API key if configured
+        if (isRuntimeApiPath(req) && process.env.RUNTIME_API_KEY) {
+          if (!validateRuntimeApiKey(req)) {
+            return res.status(401).json({ error: 'invalid runtime API key' });
+          }
+        }
+        return next();
+      }
       const token = readBearer(req) || readCookieToken(req);
       const claims = token ? verifyToken(token, secret) : null;
       if (!claims) {
